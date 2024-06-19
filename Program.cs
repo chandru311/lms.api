@@ -1,4 +1,7 @@
 using lms.api.Data;
+using lms.api.Mapping;
+using lms.api.Models;
+using lms.api.Repository;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +19,19 @@ builder.Services.AddCors(op =>
 
 var connString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connString));
+
+#endregion
+
+#region AutoMapper
+
+builder.Services.AddAutoMapper(typeof(MappingProfile));
+
+#endregion
+
+#region Repos
+
+builder.Services.AddTransient(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
 
 #endregion
 
