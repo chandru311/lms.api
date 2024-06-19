@@ -1,3 +1,6 @@
+using lms.api.Data;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 #region Cors
@@ -6,6 +9,13 @@ builder.Services.AddCors(op =>
 {
     op.AddPolicy("CustomPolicy", x => x.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 });
+
+#endregion
+
+#region Config DB
+
+var connString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connString));
 
 #endregion
 
