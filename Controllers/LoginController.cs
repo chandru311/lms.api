@@ -11,6 +11,8 @@ using System.Security.Claims;
 using System.Text;
 using System;
 using System.Collections.Generic;
+using lms.api.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace lms.api.Controllers
 {
@@ -20,10 +22,14 @@ namespace lms.api.Controllers
     {
         private readonly IGenericRepository<Usermaster> _userRepository;
         private readonly IConfiguration _configuration;
-        public LoginController(IGenericRepository<Usermaster> userRepository, IConfiguration configuration)
+        private readonly ApplicationDbContext _context;
+        public LoginController(IGenericRepository<Usermaster> userRepository, IConfiguration configuration,
+            ApplicationDbContext context
+        )
         {
             _userRepository = userRepository;
             _configuration = configuration;
+            _context = context;
         }
         [HttpPost]
         [AllowAnonymous]
@@ -32,7 +38,7 @@ namespace lms.api.Controllers
             BaseResponse<AuthenticatedToken> resp = new BaseResponse<AuthenticatedToken>();
             try
             {
-                var user = await _userRepository.Get(reqModel.EmployeeId);
+                var user = await _context.Usermasters.FirstOrDefaultAsync(x => x.EmployeeId == reqModel.EmployeeId);
 
                 if (user == null)
                 {
@@ -58,11 +64,21 @@ namespace lms.api.Controllers
 
                     if (validUserEmployeeId && validUserPassword)
                     {
-                        var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+                        var jwtSecret = _configuration["JWT:Secret"];
+                        var jwtIssuer = _configuration["JWT:ValidIssuer"];
+                        var jwtAudience = _configuration["JWT:ValidAudience"];
+
+                        if (string.IsNullOrEmpty(jwtSecret) || string.IsNullOrEmpty(jwtIssuer) || string.IsNullOrEmpty(jwtAudience))
+                        {
+                            resp.Message = "JWT configuration values are missing.";
+                            return resp;
+                        }
+
+                        var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
 
                         var token = new JwtSecurityToken(
-                            issuer: _configuration["JWT:ValidIssuer"],
-                            audience: _configuration["JWT:ValidAudience"],
+                            issuer: jwtIssuer,
+                            audience: jwtAudience,
                             expires: DateTime.UtcNow.AddDays(1),
                             claims: authClaims,
                             signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
@@ -77,6 +93,11 @@ namespace lms.api.Controllers
 
                         };
                         resp.Success = true;
+                        resp.Message = "Login Successful";
+                    }
+                    else
+                    {
+                        resp.Message = "Invalid Credentials";
                     }
 
                 }

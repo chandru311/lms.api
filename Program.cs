@@ -1,7 +1,9 @@
+using lms.api.Config;
 using lms.api.Data;
 using lms.api.Mapping;
 using lms.api.Models;
 using lms.api.Repository;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -32,6 +34,11 @@ builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 builder.Services.AddTransient(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
+#endregion
+
+#region
+
+builder.Services.AddAuthenticationConfigJwt(builder.Configuration);
 
 #endregion
 
