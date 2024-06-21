@@ -11,6 +11,10 @@ namespace lms.api.Data
         }
 
         public DbSet<Usermaster> Usermasters { get; set; }
+        public DbSet<Employees> Employees { get; set; }
+        public DbSet<Managers> Managers { get; set; }
+
+
 
     }
 }

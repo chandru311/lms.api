@@ -8,6 +8,7 @@ namespace lms.api.Repository
         Task<T> Get(long id);
         Task Create(T entity);
         Task Delete(T entity);
+        Task Update(T entity);
         Task Save();
         bool IsRecordExists(Expression<Func<T, bool>> condition);
     }

@@ -43,5 +43,11 @@ namespace lms.api.Repository
         {
             await _context.SaveChangesAsync();
         }
+
+        public async Task Update(T entity)
+        {
+            var ret = _context.Set<T>().Update(entity).Entity;
+            await Save();
+        }
     }
 }
