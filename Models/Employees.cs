@@ -7,19 +7,10 @@ namespace lms.api.Models
     {
         [Key]
         public long Id { get; set; }
-
         [Required]
         public long EmployeeId { get; set; }
-
-        [ForeignKey("EmployeeId")]
-        public Employees Employee { get; set; }
-
         [Required]
         public long ManagerId { get; set; }
-
-        [ForeignKey("ManagerId")]
-        public Managers Manager { get; set; }
-
         [Required]
         public string FirstName { get; set; }
         public string MiddleName { get; set; }

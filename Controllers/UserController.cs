@@ -37,6 +37,31 @@ namespace lms.api.Controllers
             return Ok(getEmployees);
         }
 
+        [HttpGet("{EmployeeId:long}")]
+        [Authorize]
+        public async Task<IActionResult> GetEmployee([FromRoute]long EmployeeId)
+        {
+            BaseResponse<UsermasterResponse> resp = new BaseResponse<UsermasterResponse>();
+            try
+            {
+                var employee = await _employeeRepository.Get(EmployeeId);
+                if (employee == null)
+                {
+                    resp.Message = "Employee not Found";
+                    resp.Success = false;
+                    return Ok(resp);
+                }
+                else
+                {
+                    return Ok(employee);
+                }
+            }catch (Exception ex)
+            {
+                resp.Message = ex.Message;
+            }
+            return Ok(resp);
+        }
+
         [HttpPost("AddEmployee")]
         [Authorize]
         public async Task<IActionResult> CreateEmployee([FromBody] CreateEmployeeRequest reqModel)
@@ -54,7 +79,7 @@ namespace lms.api.Controllers
                         return Ok(resp);
                     }
 
-                    var loggedInUserId = User.FindFirstValue(ClaimTypes.NameIdentifier); // Get logged-in user's ID
+                    var loggedInUserId = User.FindFirstValue("UId");
                     if (loggedInUserId == null)
                     {
                         resp.Success = false;
@@ -113,7 +138,7 @@ namespace lms.api.Controllers
 
         [HttpPut("UpdateEmployee")]
         [Authorize]
-        public async Task<IActionResult> UpdateEmployee(long EmployeeId, [FromBody] UpdateEmployeeRequest reqModel)
+        public async Task<IActionResult> UpdateEmployee([FromRoute]long EmployeeId, [FromBody] UpdateEmployeeRequest reqModel)
         {
             BaseResponse<UsermasterResponse> resp = new BaseResponse<UsermasterResponse>();
             try
@@ -167,7 +192,7 @@ namespace lms.api.Controllers
 
         [HttpDelete("DeactivateEmployee")]
         [Authorize]
-        public async Task<IActionResult> DeactivateEmployee(long EmployeeId)
+        public async Task<IActionResult> DeactivateEmployee([FromRoute]long EmployeeId)
         {
             BaseResponse<UsermasterResponse> resp = new BaseResponse<UsermasterResponse>();
             try
@@ -195,9 +220,9 @@ namespace lms.api.Controllers
             return Ok(resp);
         }
 
-        [HttpPut("Activate")]
+        [HttpPut("ActivateEmployee")]
         [Authorize]
-        public async Task<IActionResult> ActivateEmployee(long EmployeeId)
+        public async Task<IActionResult> ActivateEmployee([FromRoute] long EmployeeId)
         {
             BaseResponse<UsermasterResponse> resp = new BaseResponse<UsermasterResponse>();
             try
