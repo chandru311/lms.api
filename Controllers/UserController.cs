@@ -101,21 +101,21 @@ namespace lms.api.Controllers
                     var employeeDb = _employeeRepository.Create(new Employees()
                     {
                         EmployeeId = reqModel.EmployeeId,
-                        MobileNumber = reqModel.MobileNumber,
+                        ManagerId = Convert.ToInt64(loggedInUserId),
                         FirstName = reqModel.FirstName,
                         MiddleName  = reqModel.MiddleName,
                         LastName = reqModel.LastName,
-                        Address = reqModel.Address,
+                        Email = reqModel.Email,
+                        Country = reqModel.Country,
+                        MobileNumber = reqModel.MobileNumber,
                         City = reqModel.City,
                         State = reqModel.State,
                         DOB = reqModel.DOB,
                         DateOfJoining = reqModel.DateOfJoining,
-                        Email = reqModel.Email,
-                        Country = reqModel.Country,
+                        Address = reqModel.Address,
                         Active = 1,
                         CreatedAt = DateTime.Now,
                         CreatedBy= reqModel.EmployeeId.ToString(),
-                        ManagerId = Convert.ToInt64(loggedInUserId)
                     });
 
                     resp.Success = true;

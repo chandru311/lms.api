@@ -18,7 +18,6 @@ namespace lms.api.Models
 
         [Required]
         public string Password { get; set; }
-        public int UserStatus { get; set; }
         public int Active { get; set; }
         public string? CreatedBy { get; set; }
         public DateTime? CreatedAt { get; set; }
