@@ -6,7 +6,6 @@ namespace lms.api.Repository
     {
         Task<List<T>> GetAll();
         Task<T> Get(long id);
-        Task<T> GetID(int id);
         Task Create(T entity);
         Task Delete(T entity);
         Task Update(T entity);

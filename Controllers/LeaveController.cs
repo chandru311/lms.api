@@ -120,9 +120,9 @@ namespace lms.api.Controllers
             }
         }
 
-        [HttpPut("UpdateLeave/{id}")]
+        [HttpPut("UpdateLeave/{id:long}")]
         [Authorize]
-        public async Task<IActionResult> UpdateLeave(int id, [FromBody] ApplyLeaveRequest request)
+        public async Task<IActionResult> UpdateLeave(long id, [FromBody] ApplyLeaveRequest request)
         {
             BaseResponse<Leave> response = new BaseResponse<Leave>();
 
@@ -130,7 +130,7 @@ namespace lms.api.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    var leave = await _leaveRepository.GetID(id);
+                    var leave = await _leaveRepository.Get(id);
                     if (leave == null)
                     {
                         response.Success = false;
@@ -165,15 +165,15 @@ namespace lms.api.Controllers
             }
         }
 
-        [HttpDelete("DeleteLeave/{id}")]
+        [HttpDelete("DeleteLeave/{id:long}")]
         [Authorize]
-        public async Task<IActionResult> DeleteLeave(int id)
+        public async Task<IActionResult> DeleteLeave(long id)
         {
             BaseResponse<bool> response = new BaseResponse<bool>();
 
             try
             {
-                var leave = await _leaveRepository.GetID(id);
+                var leave = await _leaveRepository.Get(id);
                 if (leave == null)
                 {
                     response.Success = false;

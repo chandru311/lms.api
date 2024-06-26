@@ -12,8 +12,8 @@ using lms.api.Data;
 namespace lms.api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240625082246_AddLeavetable")]
-    partial class AddLeavetable
+    [Migration("20240626075052_AllInitialTables")]
+    partial class AllInitialTables
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -105,11 +105,11 @@ namespace lms.api.Migrations
 
             modelBuilder.Entity("lms.api.Models.Leave", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -124,9 +124,11 @@ namespace lms.api.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("LeaveType")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Reason")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Status")
