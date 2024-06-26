@@ -6,6 +6,7 @@ using lms.api.Models.ResponseModels;
 using lms.api.Repository;
 using lms.api.Types;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -16,17 +17,14 @@ namespace lms.api.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class UserController : ControllerBase
+    public class EmployeeController : ControllerBase
     {
         private readonly IGenericRepository<Usermaster> _userRepository;
         private readonly IGenericRepository<Employees> _employeeRepository;
         private readonly IMapper _mapper;
-        private readonly ApplicationDbContext _context;
-        public UserController(IGenericRepository<Usermaster> userRepository, ApplicationDbContext context,
-            IMapper mapper)
+        public EmployeeController(IGenericRepository<Usermaster> userRepository, IMapper mapper)
         {
             _userRepository = userRepository;
-            _context = context;
             _mapper = mapper;
         }
         [HttpGet("GetAllEmployees")]
@@ -41,7 +39,7 @@ namespace lms.api.Controllers
         [Authorize]
         public async Task<IActionResult> GetEmployee([FromRoute]long EmployeeId)
         {
-            BaseResponse<UsermasterResponse> resp = new BaseResponse<UsermasterResponse>();
+            BaseResponse<UsermasterResponse> resp = new();
             try
             {
                 var employee = await _employeeRepository.Get(EmployeeId);
@@ -66,13 +64,14 @@ namespace lms.api.Controllers
         [Authorize]
         public async Task<IActionResult> CreateEmployee([FromBody] CreateEmployeeRequest reqModel)
         {
-            BaseResponse<UsermasterResponse> resp = new BaseResponse<UsermasterResponse>();
+            BaseResponse<UsermasterResponse> resp = new();
             try
             {
                 if (ModelState.IsValid)
                 {
-                    var user = _context.Usermasters.FirstOrDefault(x => x.EmployeeId == reqModel.EmployeeId);
-                    if (user != null)
+
+                    var user = _userRepository.IsRecordExists(x => x.EmployeeId == reqModel.EmployeeId);
+                    if (user)
                     {
                         resp.Success = false;
                         resp.Message = "EmployeeId Already Exists";
@@ -87,7 +86,14 @@ namespace lms.api.Controllers
                         return Ok(resp);
                     }
 
-                    var userDb = _userRepository.Create(new Usermaster()
+                    var emp = _mapper.Map<Employees>(reqModel);
+                    emp.ManagerId = Convert.ToInt64(loggedInUserId);
+                    emp.Active = 1;
+                    emp.CreatedAt = DateTime.Now;
+                    emp.CreatedBy = reqModel.EmployeeId.ToString();
+
+
+                    var userDb = new Usermaster()
                     {
                         EmployeeId = reqModel.EmployeeId,
                         MobileNumber = reqModel.MobileNumber,
@@ -96,27 +102,10 @@ namespace lms.api.Controllers
                         Active = 1,
                         CreatedAt = DateTime.Now,
                         CreatedBy = reqModel.EmployeeId.ToString(),
-                    });
+                    };
 
-                    var employeeDb = _employeeRepository.Create(new Employees()
-                    {
-                        EmployeeId = reqModel.EmployeeId,
-                        ManagerId = Convert.ToInt64(loggedInUserId),
-                        FirstName = reqModel.FirstName,
-                        MiddleName  = reqModel.MiddleName,
-                        LastName = reqModel.LastName,
-                        Email = reqModel.Email,
-                        Country = reqModel.Country,
-                        MobileNumber = reqModel.MobileNumber,
-                        City = reqModel.City,
-                        State = reqModel.State,
-                        DOB = reqModel.DOB,
-                        DateOfJoining = reqModel.DateOfJoining,
-                        Address = reqModel.Address,
-                        Active = 1,
-                        CreatedAt = DateTime.Now,
-                        CreatedBy= reqModel.EmployeeId.ToString(),
-                    });
+                    await _employeeRepository.Create(emp);
+                    await _userRepository.Create(userDb);
 
                     resp.Success = true;
                     return Ok(resp);
@@ -140,7 +129,7 @@ namespace lms.api.Controllers
         [Authorize]
         public async Task<IActionResult> UpdateEmployee([FromRoute]long EmployeeId, [FromBody] UpdateEmployeeRequest reqModel)
         {
-            BaseResponse<UsermasterResponse> resp = new BaseResponse<UsermasterResponse>();
+            BaseResponse<UsermasterResponse> resp = new();
             try
             {
                 if(ModelState.IsValid)
@@ -194,7 +183,7 @@ namespace lms.api.Controllers
         [Authorize]
         public async Task<IActionResult> DeactivateEmployee([FromRoute]long EmployeeId)
         {
-            BaseResponse<UsermasterResponse> resp = new BaseResponse<UsermasterResponse>();
+            BaseResponse<UsermasterResponse> resp = new();
             try
             {
                 var userDb = await _userRepository.Get(EmployeeId);
@@ -224,7 +213,7 @@ namespace lms.api.Controllers
         [Authorize]
         public async Task<IActionResult> ActivateEmployee([FromRoute] long EmployeeId)
         {
-            BaseResponse<UsermasterResponse> resp = new BaseResponse<UsermasterResponse>();
+            BaseResponse<UsermasterResponse> resp = new();
             try
             {
                 var userDb = await _userRepository.Get(EmployeeId);

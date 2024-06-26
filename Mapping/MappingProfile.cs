@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using lms.api.Models;
+using lms.api.Models.RequestModels;
 
 namespace lms.api.Mapping
 {
@@ -7,6 +8,8 @@ namespace lms.api.Mapping
     {
         public MappingProfile()
         {
+            CreateMap<Employees, CreateEmployeeRequest>().ReverseMap();
+            CreateMap<Departments, CreateDepartmentRequest>().ReverseMap();
         }
     }
 }

@@ -2,16 +2,14 @@
 
 namespace lms.api.Models
 {
-    public class Managers
+    public class Departments
     {
         [Key]
+        public long DepartmentId { get; set; }
+        [Required]
+        public string DepartmentName { get; set; }
+        [Required]
         public long ManagerId { get; set; }
-        [Required]
-        public long EmployeeId { get; set; }
-        [Required]
-        public string FirstName { get; set; }
-        [Required]
-        public string LastName { get; set; }
         public int Active { get; set; }
         public string? CreatedBy { get; set; }
         public DateTime? CreatedAt { get; set; }

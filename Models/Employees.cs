@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace lms.api.Models
@@ -7,36 +8,63 @@ namespace lms.api.Models
     {
         [Key]
         public long Id { get; set; }
+
         [Required]
         public long EmployeeId { get; set; }
+
         [Required]
         public long ManagerId { get; set; }
+
         [Required]
-        public string FirstName { get; set; }
-        public string MiddleName { get; set; }
+        [MaxLength(50)]
+        public string FirstName { get; set; } = string.Empty;
+
+        [MaxLength(50)]
+        public string? MiddleName { get; set; }
+
         [Required]
-        public string LastName { get; set; }
+        [MaxLength(50)]
+        public string LastName { get; set; } = string.Empty;
+
         [Required]
-        public string? Email { get; set; }
+        [EmailAddress]
+        public string Email { get; set; } = string.Empty;
+
         [Required]
         [MaxLength(10)]
-        public string? MobileNumber { get; set; }
+        [Phone]
+        public string MobileNumber { get; set; } = string.Empty;
+
         [Required]
-        public string? Country { get; set; }
+        [MaxLength(50)]
+        public string Country { get; set; } = string.Empty;
+
         [Required]
-        public string? City { get; set; }
+        [MaxLength(50)]
+        public string City { get; set; } = string.Empty;
+
         [Required]
-        public string? State { get; set; }
+        [MaxLength(50)]
+        public string State { get; set; } = string.Empty;
+
         [Required]
-        public string? DOB { get; set; }
+        [DataType(DataType.Date)]
+        public string DOB { get; set; } = string.Empty;
+
         [Required]
-        public string? DateOfJoining { get; set; }
+        [DataType(DataType.Date)]
+        public string DateOfJoining { get; set; } = string.Empty;
+
         [Required]
-        public string? Address { get; set; }
-        public int Active { get; set; }
+        [MaxLength(250)]
+        public string Address { get; set; } = string.Empty;
+        public int Active { get; set; } = 1;
+
         public string? CreatedBy { get; set; }
+
         public DateTime? CreatedAt { get; set; }
         public string? ModifiedBy { get; set; }
+
         public DateTime? ModifiedAt { get; set; }
     }
 }
