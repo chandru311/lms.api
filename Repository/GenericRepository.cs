@@ -33,10 +33,20 @@ namespace lms.api.Repository
             return await _context.Set<T>().FindAsync(id);
         }
 
+        public async Task<T> GetID(int id)
+        {
+            return await _context.Set<T>().FindAsync(id);
+        }
+
         public bool IsRecordExists(Expression<Func<T, bool>> condition)
         {
             var result = _context.Set<T>().Where(condition).Any();
             return result;
+        }
+
+        public async Task<List<T>> Find(Expression<Func<T, bool>> condition)
+        {
+            return await _context.Set<T>().Where(condition).ToListAsync();
         }
 
         public async Task Save()

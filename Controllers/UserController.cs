@@ -39,7 +39,7 @@ namespace lms.api.Controllers
 
         [HttpGet("{EmployeeId:long}")]
         [Authorize]
-        public async Task<IActionResult> GetEmployee([FromRoute]long EmployeeId)
+        public async Task<IActionResult> GetEmployee([FromRoute] long EmployeeId)
         {
             BaseResponse<UsermasterResponse> resp = new BaseResponse<UsermasterResponse>();
             try
@@ -55,7 +55,8 @@ namespace lms.api.Controllers
                 {
                     return Ok(employee);
                 }
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 resp.Message = ex.Message;
             }
@@ -103,7 +104,7 @@ namespace lms.api.Controllers
                         EmployeeId = reqModel.EmployeeId,
                         ManagerId = Convert.ToInt64(loggedInUserId),
                         FirstName = reqModel.FirstName,
-                        MiddleName  = reqModel.MiddleName,
+                        MiddleName = reqModel.MiddleName,
                         LastName = reqModel.LastName,
                         Email = reqModel.Email,
                         Country = reqModel.Country,
@@ -115,7 +116,7 @@ namespace lms.api.Controllers
                         Address = reqModel.Address,
                         Active = 1,
                         CreatedAt = DateTime.Now,
-                        CreatedBy= reqModel.EmployeeId.ToString(),
+                        CreatedBy = reqModel.EmployeeId.ToString(),
                     });
 
                     resp.Success = true;
@@ -138,22 +139,22 @@ namespace lms.api.Controllers
 
         [HttpPut("UpdateEmployee")]
         [Authorize]
-        public async Task<IActionResult> UpdateEmployee([FromRoute]long EmployeeId, [FromBody] UpdateEmployeeRequest reqModel)
+        public async Task<IActionResult> UpdateEmployee([FromRoute] long EmployeeId, [FromBody] UpdateEmployeeRequest reqModel)
         {
             BaseResponse<UsermasterResponse> resp = new BaseResponse<UsermasterResponse>();
             try
             {
-                if(ModelState.IsValid)
+                if (ModelState.IsValid)
                 {
                     var employee = await _employeeRepository.Get(EmployeeId);
                     var employeeFromUserDb = await _userRepository.Get(EmployeeId);
-                    if(employee == null)
+                    if (employee == null)
                     {
                         resp.Success = false;
                         resp.Message = "No Employee Found";
                     }
 
-                    if(employeeFromUserDb == null)
+                    if (employeeFromUserDb == null)
                     {
                         resp.Success = false;
                         resp.Message = "No Employee Found";
@@ -182,9 +183,9 @@ namespace lms.api.Controllers
                     resp.Message = "Model is not Valid";
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                resp.Message=ex.Message;
+                resp.Message = ex.Message;
             }
 
             return Ok(resp);
@@ -192,7 +193,7 @@ namespace lms.api.Controllers
 
         [HttpDelete("DeactivateEmployee")]
         [Authorize]
-        public async Task<IActionResult> DeactivateEmployee([FromRoute]long EmployeeId)
+        public async Task<IActionResult> DeactivateEmployee([FromRoute] long EmployeeId)
         {
             BaseResponse<UsermasterResponse> resp = new BaseResponse<UsermasterResponse>();
             try

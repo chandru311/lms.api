@@ -6,6 +6,9 @@ namespace lms.api.Models.RequestModels
     public class ApplyLeaveRequest
     {
         [Required]
+        public long EmployeeId { get; set; }
+
+        [Required]
         public string LeaveType { get; set; }
 
         [Required]
@@ -20,8 +23,5 @@ namespace lms.api.Models.RequestModels
 
         [Required]
         public LeaveStatus Status { get; set; } = LeaveStatus.Pending;
-
-        [Required]
-        public long EmployeeId { get; set; }
     }
 }

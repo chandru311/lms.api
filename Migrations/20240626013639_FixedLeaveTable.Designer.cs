@@ -12,8 +12,8 @@ using lms.api.Data;
 namespace lms.api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240625100856_AddLeaveHistoryTable")]
-    partial class AddLeaveHistoryTable
+    [Migration("20240626013639_FixedLeaveTable")]
+    partial class FixedLeaveTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -138,31 +138,6 @@ namespace lms.api.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Leaves");
-                });
-
-            modelBuilder.Entity("lms.api.Models.LeaveHistory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<long>("EmployeeId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime>("LeaveAppliedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("LeaveType")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("LeaveHistories");
                 });
 
             modelBuilder.Entity("lms.api.Models.Managers", b =>

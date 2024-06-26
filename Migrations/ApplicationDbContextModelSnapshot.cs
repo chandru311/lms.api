@@ -137,31 +137,6 @@ namespace lms.api.Migrations
                     b.ToTable("Leaves");
                 });
 
-            modelBuilder.Entity("lms.api.Models.LeaveHistory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<long>("EmployeeId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime>("LeaveAppliedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("LeaveType")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("LeaveHistories");
-                });
-
             modelBuilder.Entity("lms.api.Models.Managers", b =>
                 {
                     b.Property<long>("ManagerId")

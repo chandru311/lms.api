@@ -6,10 +6,17 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace lms.api.Migrations
 {
     /// <inheritdoc />
-    public partial class AddLeaveHistoryTable : Migration
+    public partial class FixedLeaveTable : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropTable(
+                name: "LeaveHistories");
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
                 name: "LeaveHistories",
@@ -26,13 +33,6 @@ namespace lms.api.Migrations
                 {
                     table.PrimaryKey("PK_LeaveHistories", x => x.Id);
                 });
-        }
-
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
-                name: "LeaveHistories");
         }
     }
 }
