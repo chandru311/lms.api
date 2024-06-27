@@ -4,7 +4,6 @@ using lms.api.Models.RequestModels;
 using lms.api.Models.ResponseModels;
 using lms.api.Repository;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace lms.api.Controllers
@@ -23,7 +22,7 @@ namespace lms.api.Controllers
 
         [HttpGet("{ManagerId:long}")]
         [Authorize]
-        public async Task<IActionResult> GetManagerById([FromRoute]long ManagerId)
+        public async Task<IActionResult> GetManagerById([FromRoute] long ManagerId)
         {
             BaseResponse<Managers> response = new();
             try
@@ -81,10 +80,11 @@ namespace lms.api.Controllers
                 }
                 return Ok(response);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 response.Message = ex.Message;
             }
+            return Ok(response);
         }
     }
 }
