@@ -4,7 +4,6 @@ using lms.api.Models.RequestModels;
 using lms.api.Models.ResponseModels;
 using lms.api.Repository;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -42,7 +41,6 @@ namespace lms.api.Controllers
                 if (dept == null)
                 {
                     response.Message = "No Department Found";
-                    response.Success = false;
                     return Ok(response);
                 }
                 return Ok(dept);
@@ -62,7 +60,7 @@ namespace lms.api.Controllers
             try
             {
                 var depts = await _departmentRepository.GetAll();
-                return Ok(depts);
+                return Ok(response);
             }
             catch (Exception ex)
             {
@@ -82,35 +80,37 @@ namespace lms.api.Controllers
                 if (ModelState.IsValid)
                 {
                     var isDeptExist = _departmentRepository.IsRecordExists(x => x.DepartmentName == reqModel.DepartmentName);
-                    var isManagerexists = _managersRepository.IsRecordExists(x => x.ManagerId == reqModel.ManagerId);
-                    if (!isDeptExist)
+                    var isManagerExist = _managersRepository.IsRecordExists(x => x.EmployeeId == reqModel.ManagerEmployeeId);
+                    var isManagerAssociated = _departmentRepository.IsRecordExists(x => x.ManagerId == reqModel.ManagerEmployeeId);
+                    if (isDeptExist)
                     {
-                        response.Success = false;
                         response.Message = "Department Already Exists";
                         return Ok(response);
                     }
-
-                    if (!isManagerexists)
+                    else if (isManagerAssociated)
                     {
-                        response.Success = false;
+                        response.Message = "Manager associated with another department";
+                        return Ok(response);
+                    }
+                    else if (!isManagerExist)
+                    {
                         response.Message = "Manager doesn't exist";
                         return Ok(response);
                     }
 
                     var dept = _mapper.Map<Departments>(reqModel);
+                    dept.ManagerId = reqModel.ManagerEmployeeId;
                     dept.Active = 1;
                     dept.CreatedBy = _loggedInUserId;
                     dept.CreatedAt = DateTime.Now;
 
                     await _departmentRepository.Create(dept);
-
                     response.Success = true;
-                    return Ok(response);
+
                 }
                 else
                 {
                     response.Message = "Model is not Valid";
-                    response.Success = false;
                 }
                 return Ok(response);
             }
@@ -137,13 +137,31 @@ namespace lms.api.Controllers
                         response.Message = "No Department Found";
                     }
 
-                    var deptMap = _mapper.Map<Departments>(reqModel);
+                    var isDeptExist = _departmentRepository.IsRecordExists(x => x.DepartmentName == reqModel.DepartmentName);
+                    var isManagerExist = _managersRepository.IsRecordExists(x => x.EmployeeId == reqModel.ManagerEmployeeId);
+                    var isManagerAssociated = _departmentRepository.IsRecordExists(x => x.ManagerId == reqModel.ManagerEmployeeId);
+                    if (isDeptExist)
+                    {
+                        response.Message = "Department Already Exists";
+                        return Ok(response);
+                    }
+                    else if (!isManagerExist)
+                    {
+                        response.Message = "Manager doesn't exist";
+                        return Ok(response);
+                    }
+
+
+                    _mapper.Map(reqModel,dept);
                     dept.ModifiedBy = _loggedInUserId;
                     dept.ModifiedAt = DateTime.Now;
+                    dept.ManagerId = reqModel.ManagerEmployeeId;
+
+                    await _departmentRepository.Update(dept);
+                    response.Success = true; 
                 }
                 else
                 {
-                    response.Success = false;
                     response.Message = "Model is not Valid";
                 }
             }
@@ -154,7 +172,7 @@ namespace lms.api.Controllers
             return Ok(response);
         }
 
-        [HttpPut("ActivateDept")]
+        [HttpPut("ActivateDept{DepartmentId:long}")]
         [Authorize]
         public async Task<IActionResult> ActivateDept([FromRoute] long DepartmentId)
         {
@@ -164,12 +182,12 @@ namespace lms.api.Controllers
                 var dept = await _departmentRepository.Get(DepartmentId);
                 if (dept == null)
                 {
-                    response.Success = false;
                     response.Message = "No Department Found";
                 }
 
                 dept.Active = 1;
                 await _departmentRepository.Update(dept);
+                response.Success = true;
             }
             catch (Exception ex)
             {
@@ -178,7 +196,7 @@ namespace lms.api.Controllers
             return Ok(response);
         }
 
-        [HttpDelete("DeactivateDept")]
+        [HttpDelete("DeactivateDept{DepartmentId:long}")]
         [Authorize]
         public async Task<IActionResult> DeactivateDept([FromRoute]long DepartmentId)
         {
@@ -188,12 +206,12 @@ namespace lms.api.Controllers
                 var dept = await _departmentRepository.Get(DepartmentId);
                 if (dept == null)
                 {
-                    response.Success = false;
                     response.Message = "No Department Found";
                 }
 
                 dept.Active = 0;
                 await _departmentRepository.Update(dept);
+                response.Success = true;
             }
             catch (Exception ex)
             {

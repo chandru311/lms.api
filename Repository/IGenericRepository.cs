@@ -11,5 +11,6 @@ namespace lms.api.Repository
         Task Update(T entity);
         Task Save();
         bool IsRecordExists(Expression<Func<T, bool>> condition);
+        Task<T> GetByCondition(Expression<Func<T, bool>> condition);
     }
 }

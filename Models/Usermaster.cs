@@ -18,7 +18,7 @@ namespace lms.api.Models
         public string Email { get; set; }
         [Required]
         public string Password { get; set; }
-        public int Active { get; set; }
+        public int Active { get; set; } = 1;
         public string? CreatedBy { get; set; }
         public DateTime? CreatedAt { get; set; }
         public string? ModifiedBy { get; set; }
