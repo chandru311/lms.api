@@ -8,14 +8,14 @@ namespace lms.api.Models
         [Key]
         public long UId { get; set; }
         public int UserType { get; set; }
-
         [Required]
         public long EmployeeId { get; set; }
-
         [Required]
         [MaxLength(10)]
         public string MobileNumber { get; set; }
-
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; }
         [Required]
         public string Password { get; set; }
         public int Active { get; set; }
