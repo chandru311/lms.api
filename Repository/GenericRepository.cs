@@ -51,8 +51,12 @@ namespace lms.api.Repository
 
         public async Task Update(T entity)
         {
-            var ret = _context.Set<T>().Update(entity).Entity;
+            _ = _context.Set<T>().Update(entity).Entity;
             await Save();
+        }
+        public async Task<T> GetByCondition(Expression<Func<T, bool>> condition)
+        {
+            return await _context.Set<T>().FirstOrDefaultAsync(condition);
         }
     }
 }

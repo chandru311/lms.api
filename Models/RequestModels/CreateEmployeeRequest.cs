@@ -30,5 +30,7 @@ namespace lms.api.Models.RequestModels
         public string? Address { get; set; }
         [Required]
         public string Password { get; set; }
+        [Required]
+        public long ManagerId { get; set; }
     }
 }

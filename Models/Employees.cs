@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Reflection.Metadata;
 
 namespace lms.api.Models
 {
@@ -16,48 +17,35 @@ namespace lms.api.Models
         public long ManagerId { get; set; }
 
         [Required]
-        [MaxLength(50)]
-        public string FirstName { get; set; } = string.Empty;
-
-        [MaxLength(50)]
+        public string FirstName { get; set; }
         public string? MiddleName { get; set; }
 
         [Required]
-        [MaxLength(50)]
-        public string LastName { get; set; } = string.Empty;
+        public string LastName { get; set; }
 
         [Required]
         [EmailAddress]
-        public string Email { get; set; } = string.Empty;
+        public string Email { get; set; }
 
         [Required]
-        [MaxLength(10)]
-        [Phone]
-        public string MobileNumber { get; set; } = string.Empty;
+        public string MobileNumber { get; set; }
 
         [Required]
-        [MaxLength(50)]
-        public string Country { get; set; } = string.Empty;
+        public string? Country { get; set; }
 
         [Required]
-        [MaxLength(50)]
-        public string City { get; set; } = string.Empty;
+        public string? City { get; set; }
 
         [Required]
-        [MaxLength(50)]
-        public string State { get; set; } = string.Empty;
+        public string? State { get; set; }
 
         [Required]
-        [DataType(DataType.Date)]
-        public string DOB { get; set; } = string.Empty;
+        public string DOB { get; set; }
 
         [Required]
-        [DataType(DataType.Date)]
-        public string DateOfJoining { get; set; } = string.Empty;
-
+        public string DateOfJoining { get; set; }
         [Required]
-        [MaxLength(250)]
-        public string Address { get; set; } = string.Empty;
+        public string? Address { get; set; }
         public int Active { get; set; } = 1;
 
         public string? CreatedBy { get; set; }

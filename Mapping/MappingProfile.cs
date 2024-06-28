@@ -10,6 +10,9 @@ namespace lms.api.Mapping
         {
             CreateMap<Employees, CreateEmployeeRequest>().ReverseMap();
             CreateMap<Departments, CreateDepartmentRequest>().ReverseMap();
+            CreateMap<Managers, CreateManagerRequest>().ReverseMap();
+            CreateMap<Usermaster, CreateManagerRequest>().ReverseMap();
+            CreateMap<Usermaster, CreateEmployeeRequest>().ReverseMap();
         }
     }
 }
