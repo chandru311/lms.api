@@ -39,6 +39,11 @@ namespace lms.api.Repository
             return result;
         }
 
+        public async Task<List<T>> Find(Expression<Func<T, bool>> condition)
+        {
+            return await _context.Set<T>().Where(condition).ToListAsync();
+        }
+
         public async Task Save()
         {
             await _context.SaveChangesAsync();

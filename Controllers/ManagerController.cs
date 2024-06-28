@@ -35,7 +35,7 @@ namespace lms.api.Controllers
 
         [HttpGet("{ManagerId:long}")]
         [Authorize]
-        public async Task<IActionResult> GetManagerById([FromRoute]long ManagerId)
+        public async Task<IActionResult> GetManagerById([FromRoute] long ManagerId)
         {
             BaseResponse<Managers> response = new();
             try
@@ -117,7 +117,7 @@ namespace lms.api.Controllers
                 }
                 return Ok(response);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 response.Message = ex.Message;
             }

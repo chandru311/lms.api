@@ -46,7 +46,7 @@ namespace lms.api.Controllers
 
         [HttpGet("{EmployeeId:long}")]
         [Authorize]
-        public async Task<IActionResult> GetEmployee([FromRoute]long EmployeeId)
+        public async Task<IActionResult> GetEmployee([FromRoute] long EmployeeId)
         {
             BaseResponse<Employees> resp = new();
             try
@@ -60,7 +60,8 @@ namespace lms.api.Controllers
                 {
                     return Ok(employee);
                 }
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 resp.Message = ex.Message;
             }
@@ -133,17 +134,17 @@ namespace lms.api.Controllers
             BaseResponse<Employees> resp = new();
             try
             {
-                if(ModelState.IsValid)
+                if (ModelState.IsValid)
                 {
                     var employee = await _employeeRepository.Get(EmployeeId);
                     var employeeFromUserDb = await _userRepository.Get(EmployeeId);
-                    if(employee == null)
+                    if (employee == null)
                     {
                         resp.Message = "No Employee Found";
                         return Ok(resp);
                     }
 
-                    if(employeeFromUserDb == null)
+                    if (employeeFromUserDb == null)
                     {
                         resp.Message = "No Employee Found";
                         return Ok(resp);
@@ -167,9 +168,9 @@ namespace lms.api.Controllers
                     resp.Message = "Model is not Valid";
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                resp.Message=ex.Message;
+                resp.Message = ex.Message;
             }
 
             return Ok(resp);
@@ -177,7 +178,7 @@ namespace lms.api.Controllers
 
         [HttpDelete("DeactivateEmployee")]
         [Authorize]
-        public async Task<IActionResult> DeactivateEmployee([FromRoute]long EmployeeId)
+        public async Task<IActionResult> DeactivateEmployee([FromRoute] long EmployeeId)
         {
             BaseResponse<Employees> resp = new();
             try
