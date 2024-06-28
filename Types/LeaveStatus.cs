@@ -2,6 +2,11 @@
 
 namespace lms.api.Types
 {
+    public class UpdateLeaveStatusRequest
+    {
+        public int Status { get; set; }
+    }
+
     public enum LeaveStatus
     {
         [Description("Pending")]
@@ -13,4 +18,5 @@ namespace lms.api.Types
         [Description("Rejected")]
         Rejected = 2,
     }
+
 }

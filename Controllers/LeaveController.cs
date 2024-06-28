@@ -31,8 +31,6 @@ namespace lms.api.Controllers
         [Authorize]
         public async Task<IActionResult> ApplyLeave([FromBody] ApplyLeaveRequest request)
         {
-            BaseResponse<Leave> response = new BaseResponse<Leave>();
-
             try
             {
                 if (ModelState.IsValid)
@@ -40,9 +38,7 @@ namespace lms.api.Controllers
                     var loggedInUserId = User.FindFirstValue("UId");
                     if (loggedInUserId == null)
                     {
-                        response.Success = false;
-                        response.Message = "Invalid User";
-                        return Ok(response);
+                        return Unauthorized(new BaseResponse<Leave> { Success = false, Message = "Invalid User" });
                     }
 
                     var leave = new Leave
@@ -59,22 +55,16 @@ namespace lms.api.Controllers
 
                     await _leaveRepository.Create(leave);
 
-                    response.Success = true;
-                    response.Data = leave;
-                    return Ok(response);
+                    return Ok(new BaseResponse<Leave> { Success = true, Data = leave });
                 }
                 else
                 {
-                    response.Success = false;
-                    response.Message = "Model is not Valid";
-                    return Ok(response);
+                    return BadRequest(new BaseResponse<Leave> { Success = false, Message = "Model is not valid" });
                 }
             }
             catch (Exception ex)
             {
-                response.Success = false;
-                response.Message = ex.Message;
-                return Ok(response);
+                return StatusCode(500, new BaseResponse<Leave> { Success = false, Message = ex.Message });
             }
         }
 
@@ -82,41 +72,33 @@ namespace lms.api.Controllers
         [Authorize]
         public async Task<IActionResult> GetAllLeaves()
         {
-            BaseResponse<IEnumerable<Leave>> response = new BaseResponse<IEnumerable<Leave>>();
-
             try
             {
-                var leaves = await _leaveRepository.Find(l => l.Status != LeaveStatus.Rejected);
-                response.Success = true;
-                response.Data = leaves;
-                return Ok(response);
+                var leaves = await _leaveRepository.GetAll();
+                return Ok(new BaseResponse<IEnumerable<Leave>> { Success = true, Data = leaves });
             }
             catch (Exception ex)
             {
-                response.Success = false;
-                response.Message = ex.Message;
-                return Ok(response);
+                return StatusCode(500, new BaseResponse<IEnumerable<Leave>> { Success = false, Message = ex.Message });
             }
         }
 
-        [HttpGet("GetLeavesByEmployeeId/{employeeId}")]
+        [HttpGet("GetLeavesByEmployeeId/{employeeId:long}")]
         [Authorize]
         public async Task<IActionResult> GetLeavesByEmployeeId(long employeeId)
         {
-            BaseResponse<IEnumerable<Leave>> response = new BaseResponse<IEnumerable<Leave>>();
-
             try
             {
-                var leaves = await _leaveRepository.Find(l => l.EmployeeId == employeeId && l.Status != LeaveStatus.Rejected);
-                response.Success = true;
-                response.Data = leaves;
-                return Ok(response);
+                var leaves = await _leaveRepository.Find(l => l.EmployeeId == employeeId);
+                if (leaves == null || !leaves.Any())
+                {
+                    return NotFound(new BaseResponse<IEnumerable<Leave>> { Success = false, Message = "No leave requests found for the given employee ID" });
+                }
+                return Ok(new BaseResponse<IEnumerable<Leave>> { Success = true, Data = leaves });
             }
             catch (Exception ex)
             {
-                response.Success = false;
-                response.Message = ex.Message;
-                return Ok(response);
+                return StatusCode(500, new BaseResponse<IEnumerable<Leave>> { Success = false, Message = ex.Message });
             }
         }
 
@@ -124,8 +106,6 @@ namespace lms.api.Controllers
         [Authorize]
         public async Task<IActionResult> UpdateLeave(long id, [FromBody] ApplyLeaveRequest request)
         {
-            BaseResponse<Leave> response = new BaseResponse<Leave>();
-
             try
             {
                 if (ModelState.IsValid)
@@ -133,9 +113,12 @@ namespace lms.api.Controllers
                     var leave = await _leaveRepository.Get(id);
                     if (leave == null)
                     {
-                        response.Success = false;
-                        response.Message = "Leave request not found";
-                        return Ok(response);
+                        return NotFound(new BaseResponse<Leave> { Success = false, Message = "Leave request not found" });
+                    }
+
+                    if (leave.Status != LeaveStatus.Pending)
+                    {
+                        return BadRequest(new BaseResponse<Leave> { Success = false, Message = "Only pending leave requests can be updated" });
                     }
 
                     leave.LeaveType = request.LeaveType;
@@ -146,22 +129,56 @@ namespace lms.api.Controllers
 
                     await _leaveRepository.Update(leave);
 
-                    response.Success = true;
-                    response.Data = leave;
-                    return Ok(response);
+                    return Ok(new BaseResponse<Leave> { Success = true, Data = leave });
                 }
                 else
                 {
-                    response.Success = false;
-                    response.Message = "Model is not Valid";
-                    return Ok(response);
+                    return BadRequest(new BaseResponse<Leave> { Success = false, Message = "Model is not valid" });
                 }
             }
             catch (Exception ex)
             {
-                response.Success = false;
-                response.Message = ex.Message;
-                return Ok(response);
+                return StatusCode(500, new BaseResponse<Leave> { Success = false, Message = ex.Message });
+            }
+        }
+
+        [HttpPut("ApplyOrRejectLeave/{id:long}")]
+        [Authorize]
+        public async Task<IActionResult> ApplyOrRejectLeave(long id, [FromBody] UpdateLeaveStatusRequest request)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var leave = await _leaveRepository.Get(id);
+                    if (leave == null)
+                    {
+                        return NotFound(new BaseResponse<Leave> { Success = false, Message = "Leave request not found" });
+                    }
+
+                    if (leave.Status == LeaveStatus.Rejected)
+                    {
+                        return BadRequest(new BaseResponse<Leave> { Success = false, Message = "Cannot update an already rejected leave request" });
+                    }
+
+                    if (request.Status != (int)LeaveStatus.Approved && request.Status != (int)LeaveStatus.Rejected)
+                    {
+                        return BadRequest(new BaseResponse<Leave> { Success = false, Message = "Invalid status. Only approved or rejected statuses are allowed" });
+                    }
+
+                    leave.Status = (LeaveStatus)request.Status;
+                    await _leaveRepository.Update(leave);
+
+                    return Ok(new BaseResponse<Leave> { Success = true, Data = leave });
+                }
+                else
+                {
+                    return BadRequest(new BaseResponse<Leave> { Success = false, Message = "Model is not valid" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new BaseResponse<Leave> { Success = false, Message = ex.Message });
             }
         }
 
@@ -169,30 +186,28 @@ namespace lms.api.Controllers
         [Authorize]
         public async Task<IActionResult> DeleteLeave(long id)
         {
-            BaseResponse<bool> response = new BaseResponse<bool>();
-
             try
             {
                 var leave = await _leaveRepository.Get(id);
                 if (leave == null)
                 {
-                    response.Success = false;
-                    response.Message = "Leave request not found";
-                    return Ok(response);
+                    return NotFound(new BaseResponse<bool> { Success = false, Message = "Leave request not found" });
+                }
+
+                if (leave.Status != LeaveStatus.Pending)
+                {
+                    return BadRequest(new BaseResponse<bool> { Success = false, Message = "Only pending leave requests can be deleted" });
                 }
 
                 await _leaveRepository.Delete(leave);
 
-                response.Success = true;
-                response.Data = true;
-                return Ok(response);
+                return NoContent();
             }
             catch (Exception ex)
             {
-                response.Success = false;
-                response.Message = ex.Message;
-                return Ok(response);
+                return StatusCode(500, new BaseResponse<bool> { Success = false, Message = ex.Message });
             }
         }
+
     }
 }
