@@ -2,22 +2,14 @@
 
 namespace lms.api.Models
 {
-    public class Usermaster
+    public class Departments
     {
-
         [Key]
-        public long UId { get; set; }
-        public int UserType { get; set; }
+        public long DepartmentId { get; set; }
         [Required]
-        public long EmployeeId { get; set; }
+        public string DepartmentName { get; set; }
         [Required]
-        [MaxLength(10)]
-        public string MobileNumber { get; set; }
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; }
-        [Required]
-        public string Password { get; set; }
+        public long ManagerId { get; set; }
         public int Active { get; set; } = 1;
         public string? CreatedBy { get; set; }
         public DateTime? CreatedAt { get; set; }
