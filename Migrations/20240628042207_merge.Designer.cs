@@ -12,8 +12,8 @@ using lms.api.Data;
 namespace lms.api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240628035703_AllCommit")]
-    partial class AllCommit
+    [Migration("20240628042207_merge")]
+    partial class merge
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

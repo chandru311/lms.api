@@ -39,8 +39,36 @@ namespace lms.api.Controllers
         [Authorize]
         public async Task<IActionResult> GetAllEmployees()
         {
+            BaseResponse<List<Employees>> response = new();
+
             var getEmployees = await _employeeRepository.GetAll();
-            return Ok(getEmployees);
+            response.Success = true;
+            response.Data = getEmployees;
+            return Ok(response);
+        }
+
+        [HttpGet("GetEmployeesByManagerId")]
+        [Authorize]
+        public async Task<IActionResult> GetEmployeeByManagerId()
+        {
+            GetLoggedInUserId();
+            BaseResponse<List<Managers>> response = new();
+            try
+            {
+                var manager = await _userRepository.GetByCondition(x => x.UId == Convert.ToInt64(_loggedInUserId));
+                var employeeId = manager.EmployeeId;
+
+                var employees = await _managersRepository.Find(x => x.EmployeeId == employeeId);
+                
+                response.Success = true;
+                response.Data = employees;
+            }
+            catch (Exception ex)
+            {
+                response.Message = ex.Message;
+            }
+            return Ok(response);
+            
         }
 
         [HttpGet("{EmployeeId:long}")]
