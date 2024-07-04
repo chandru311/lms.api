@@ -1,16 +1,12 @@
 ﻿using AutoMapper;
-using lms.api.Data;
 using lms.api.Models;
 using lms.api.Models.RequestModels;
 using lms.api.Models.ResponseModels;
 using lms.api.Repository;
 using lms.api.Types;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace lms.api.Controllers
 {
@@ -24,13 +20,16 @@ namespace lms.api.Controllers
         private readonly IGenericRepository<Managers> _managersRepository;
         private readonly IMapper _mapper;
         private string _loggedInUserId;
+
         public EmployeeController(IGenericRepository<Usermaster> userRepository, IMapper mapper,
-            IGenericRepository<Managers> managersRepository)
+            IGenericRepository<Employees> employeeRepository, IGenericRepository<Managers> managersRepository)
         {
             _userRepository = userRepository;
             _mapper = mapper;
+            _employeeRepository = employeeRepository;
             _managersRepository = managersRepository;
         }
+
         private void GetLoggedInUserId()
         {
             _loggedInUserId = User.FindFirstValue("UId");
@@ -72,12 +71,17 @@ namespace lms.api.Controllers
         [Authorize]
         public async Task<IActionResult> CreateEmployee([FromBody] CreateEmployeeRequest reqModel)
         {
-            GetLoggedInUserId();
             BaseResponse<Employees> resp = new();
             try
             {
                 if (ModelState.IsValid)
                 {
+                    GetLoggedInUserId();
+                    if (_loggedInUserId == null)
+                    {
+                        resp.Message = "Unable to retrieve logged-in user's ID";
+                        return Ok(resp);
+                    }
 
                     var user = _userRepository.IsRecordExists(x => x.EmployeeId == reqModel.EmployeeId);
                     var manager = _managersRepository.IsRecordExists(x => x.ManagerId == reqModel.ManagerId);
@@ -89,13 +93,6 @@ namespace lms.api.Controllers
                     else if (!manager)
                     {
                         resp.Message = "Manager Not Found";
-                        return Ok(resp);
-                    }
-
-                    var loggedInUserId = User.FindFirstValue("UId");
-                    if (loggedInUserId == null)
-                    {
-                        resp.Message = "Unable to retrieve logged-in user's ID";
                         return Ok(resp);
                     }
 
@@ -127,9 +124,9 @@ namespace lms.api.Controllers
             return Ok(resp);
         }
 
-        [HttpPut("UpdateEmployee")]
+        [HttpPut("UpdateEmployee/{EmployeeId:long}")]
         [Authorize]
-        public async Task<IActionResult> UpdateEmployee([FromRoute]long EmployeeId, [FromBody] CreateEmployeeRequest reqModel)
+        public async Task<IActionResult> UpdateEmployee(long EmployeeId, [FromBody] CreateEmployeeRequest reqModel)
         {
             BaseResponse<Employees> resp = new();
             try
@@ -150,6 +147,13 @@ namespace lms.api.Controllers
                         return Ok(resp);
                     }
 
+                    GetLoggedInUserId();
+                    if (_loggedInUserId == null)
+                    {
+                        resp.Message = "Unable to retrieve logged-in user's ID";
+                        return Ok(resp);
+                    }
+
                     _mapper.Map(reqModel, employeeFromUserDb);
                     employeeFromUserDb.ModifiedBy = _loggedInUserId;
                     employeeFromUserDb.ModifiedAt = DateTime.UtcNow;
@@ -158,8 +162,8 @@ namespace lms.api.Controllers
                     employee.CreatedBy = _loggedInUserId;
                     employee.CreatedAt = DateTime.UtcNow;
 
-                    await _userRepository.Create(employeeFromUserDb);
-                    await _employeeRepository.Create(employee);
+                    await _userRepository.Update(employeeFromUserDb);
+                    await _employeeRepository.Update(employee);
 
                     resp.Success = true;
                 }
@@ -176,9 +180,9 @@ namespace lms.api.Controllers
             return Ok(resp);
         }
 
-        [HttpDelete("DeactivateEmployee")]
+        [HttpDelete("DeactivateEmployee/{EmployeeId:long}")]
         [Authorize]
-        public async Task<IActionResult> DeactivateEmployee([FromRoute] long EmployeeId)
+        public async Task<IActionResult> DeactivateEmployee(long EmployeeId)
         {
             BaseResponse<Employees> resp = new();
             try
@@ -206,9 +210,9 @@ namespace lms.api.Controllers
             return Ok(resp);
         }
 
-        [HttpPut("ActivateEmployee")]
+        [HttpPut("ActivateEmployee/{EmployeeId:long}")]
         [Authorize]
-        public async Task<IActionResult> ActivateEmployee([FromRoute] long EmployeeId)
+        public async Task<IActionResult> ActivateEmployee(long EmployeeId)
         {
             BaseResponse<Employees> resp = new();
             try
