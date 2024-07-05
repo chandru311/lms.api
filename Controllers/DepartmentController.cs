@@ -11,213 +11,237 @@ namespace lms.api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class DepartmentController : ControllerBase
+    [Authorize]
+    public class DepartmentsController : ControllerBase
     {
         private readonly IGenericRepository<Departments> _departmentRepository;
-        private readonly IGenericRepository<Managers> _managersRepository;
+        private readonly IGenericRepository<Managers> _managerRepository;
+        private readonly IGenericRepository<Employees> _employeeRepository;
         private readonly IMapper _mapper;
-        private string _loggedInUserId;
-        public DepartmentController(IGenericRepository<Departments> departmentRepository, IMapper mapper,
-            IGenericRepository<Managers> managersRepository)
+
+        public DepartmentsController(
+            IGenericRepository<Departments> departmentRepository,
+            IGenericRepository<Managers> managerRepository,
+            IGenericRepository<Employees> employeeRepository,
+            IMapper mapper)
         {
             _departmentRepository = departmentRepository;
+            _managerRepository = managerRepository;
+            _employeeRepository = employeeRepository;
             _mapper = mapper;
-            _managersRepository = managersRepository;
         }
 
-        private void GetLoggedInUserId()
+        private async Task PopulateDepartmentDetails(Departments department)
         {
-            _loggedInUserId = User.FindFirstValue("UId");
+            if (department.ManagerId.HasValue)
+            {
+                var manager = await _managerRepository.Get(department.ManagerId.Value);
+                department.DepartmentHead = manager?.FirstName;
+            }
+
+            // Count the employees in the department
+            var employeesCount = await _employeeRepository.Find(e => e.DepartmentId == department.DepartmentId);
+            department.EmployeesCount = employeesCount.Count();
         }
 
-        [HttpGet("{DepartmentId:long}")]
-        [Authorize]
-        public async Task<IActionResult> GetDepartment([FromRoute] long DepartmentId)
+        [HttpPost("CreateDepartment")]
+        public async Task<ActionResult> CreateDepartment(CreateDepartmentRequest createRequest)
         {
-            BaseResponse<Departments> response = new();
             try
             {
-                var dept = await _departmentRepository.Get(DepartmentId);
-                if (dept == null)
+                if (!ModelState.IsValid)
                 {
-                    response.Message = "No Department Found";
-                    return Ok(response);
+                    return BadRequest(new BaseResponse<Departments> { Success = false, Message = "Model is not valid" });
                 }
-                return Ok(dept);
+
+                var existingDepartment = await _departmentRepository.GetByCondition(d => d.DepartmentName == createRequest.DepartmentName);
+                if (existingDepartment != null)
+                {
+                    return BadRequest(new BaseResponse<Departments> { Success = false, Message = "Department name already exists" });
+                }
+
+                var department = _mapper.Map<Departments>(createRequest);
+                department.CreatedAt = DateTime.UtcNow;
+
+                department.CreatedBy = User.FindFirstValue("UId");
+
+                await _departmentRepository.Create(department);
+
+                return StatusCode(StatusCodes.Status201Created, new BaseResponse<Departments> { Success = true, Data = department });
             }
             catch (Exception ex)
             {
-                response.Message = ex.Message;
+                return StatusCode(500, new BaseResponse<Departments> { Success = false, Message = ex.Message });
             }
-            return Ok(response);
         }
 
-        [HttpGet]
-        [Authorize]
-        public async Task<IActionResult> GetAllDepts()
+        [HttpPut("UpdateDepartment/{id:long}")]
+        public async Task<ActionResult<BaseResponse<Departments>>> UpdateDepartment(long id, CreateDepartmentRequest updateRequest)
         {
-            BaseResponse<Departments> response = new();
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new BaseResponse<Departments> { Success = false, Message = "Model is not valid" });
+            }
+
             try
             {
-                var depts = await _departmentRepository.GetAll();
-                return Ok(response);
+                var department = await _departmentRepository.Get(id);
+                if (department == null)
+                {
+                    return NotFound(new BaseResponse<Departments> { Success = false, Message = "Department not found" });
+                }
+
+                department.DepartmentName = updateRequest.DepartmentName;
+                department.ModifiedAt = DateTime.UtcNow;
+
+                var userId = User.FindFirstValue("UId");
+                department.ModifiedBy = userId;
+
+                await _departmentRepository.Update(department);
+
+                return Ok(new BaseResponse<Departments> { Success = true, Data = department });
             }
             catch (Exception ex)
             {
-                response.Message = ex.Message;
+                return StatusCode(StatusCodes.Status500InternalServerError, new BaseResponse<Departments> { Success = false, Message = ex.Message });
             }
-            return Ok(response);
         }
 
-        [HttpPost]
-        [Authorize]
-        public async Task<IActionResult> CreateDept([FromBody] CreateDepartmentRequest reqModel)
+        [HttpGet("GetAllDepartments")]
+        public async Task<ActionResult<BaseResponse<IEnumerable<Departments>>>> GetDepartments()
         {
-            GetLoggedInUserId();
-            BaseResponse<Departments> response = new();
             try
             {
-                if (ModelState.IsValid)
+                var departments = await _departmentRepository.GetAll();
+
+                foreach (var department in departments)
                 {
-                    var isDeptExist = _departmentRepository.IsRecordExists(x => x.DepartmentName == reqModel.DepartmentName);
-                    var isManagerExist = _managersRepository.IsRecordExists(x => x.EmployeeId == reqModel.ManagerEmployeeId);
-                    var isManagerAssociated = _departmentRepository.IsRecordExists(x => x.ManagerId == reqModel.ManagerEmployeeId);
-                    if (isDeptExist)
-                    {
-                        response.Message = "Department Already Exists";
-                        return Ok(response);
-                    }
-                    else if (isManagerAssociated)
-                    {
-                        response.Message = "Manager associated with another department";
-                        return Ok(response);
-                    }
-                    else if (!isManagerExist)
-                    {
-                        response.Message = "Manager doesn't exist";
-                        return Ok(response);
-                    }
-
-                    var dept = _mapper.Map<Departments>(reqModel);
-                    dept.ManagerId = reqModel.ManagerEmployeeId;
-                    dept.Active = 1;
-                    dept.CreatedBy = _loggedInUserId;
-                    dept.CreatedAt = DateTime.Now;
-
-                    await _departmentRepository.Create(dept);
-                    response.Success = true;
-
+                    await PopulateDepartmentDetails(department);
                 }
-                else
-                {
-                    response.Message = "Model is not Valid";
-                }
-                return Ok(response);
+
+                return Ok(new BaseResponse<IEnumerable<Departments>> { Success = true, Data = departments });
             }
             catch (Exception ex)
             {
-                response.Message = ex.Message;
+                return StatusCode(StatusCodes.Status500InternalServerError, new BaseResponse<IEnumerable<Departments>> { Success = false, Message = ex.Message });
             }
-            return Ok(response);
         }
 
-        [HttpPut("{DepartmentId:long}")]
-        [Authorize]
-        public async Task<IActionResult> UpdateDept([FromRoute]long DepartmentId, [FromBody]CreateDepartmentRequest reqModel)
+        [HttpGet("GetDepartment/{id:long}")]
+        public async Task<ActionResult<BaseResponse<Departments>>> GetDepartment(long id)
         {
-            GetLoggedInUserId();
-            BaseResponse<Departments> response = new();
             try
             {
-                if(ModelState.IsValid)
+                var department = await _departmentRepository.Get(id);
+                if (department == null)
                 {
-                    var dept = await _departmentRepository.Get(DepartmentId);
-                    if(dept == null)
-                    {
-                        response.Message = "No Department Found";
-                    }
-
-                    var isDeptExist = _departmentRepository.IsRecordExists(x => x.DepartmentName == reqModel.DepartmentName);
-                    var isManagerExist = _managersRepository.IsRecordExists(x => x.EmployeeId == reqModel.ManagerEmployeeId);
-                    var isManagerAssociated = _departmentRepository.IsRecordExists(x => x.ManagerId == reqModel.ManagerEmployeeId);
-                    if (isDeptExist)
-                    {
-                        response.Message = "Department Already Exists";
-                        return Ok(response);
-                    }
-                    else if (!isManagerExist)
-                    {
-                        response.Message = "Manager doesn't exist";
-                        return Ok(response);
-                    }
-
-
-                    _mapper.Map(reqModel,dept);
-                    dept.ModifiedBy = _loggedInUserId;
-                    dept.ModifiedAt = DateTime.Now;
-                    dept.ManagerId = reqModel.ManagerEmployeeId;
-
-                    await _departmentRepository.Update(dept);
-                    response.Success = true; 
+                    return NotFound(new BaseResponse<Departments> { Success = false, Message = "Department not found" });
                 }
-                else
-                {
-                    response.Message = "Model is not Valid";
-                }
+
+                await PopulateDepartmentDetails(department);
+
+                return Ok(new BaseResponse<Departments> { Success = true, Data = department });
             }
             catch (Exception ex)
             {
-                response.Message= ex.Message;
+                return StatusCode(StatusCodes.Status500InternalServerError, new BaseResponse<Departments> { Success = false, Message = ex.Message });
             }
-            return Ok(response);
         }
 
-        [HttpPut("ActivateDept{DepartmentId:long}")]
-        [Authorize]
-        public async Task<IActionResult> ActivateDept([FromRoute] long DepartmentId)
+        [HttpPatch("SetDepartmentStatus/{id:long}")]
+        public async Task<ActionResult<BaseResponse<Departments>>> SetDepartmentStatus(long id, [FromBody] int status)
         {
-            BaseResponse<Departments> response = new();
+            if (status != 0 && status != 1)
+            {
+                return BadRequest(new BaseResponse<Departments> { Success = false, Message = "Invalid status. Use 0 for deactivate or 1 for activate." });
+            }
+
             try
             {
-                var dept = await _departmentRepository.Get(DepartmentId);
-                if (dept == null)
+                var department = await _departmentRepository.Get(id);
+                if (department == null)
                 {
-                    response.Message = "No Department Found";
+                    return NotFound(new BaseResponse<Departments> { Success = false, Message = "Department not found" });
                 }
 
-                dept.Active = 1;
-                await _departmentRepository.Update(dept);
-                response.Success = true;
+                department.Active = status;
+                department.ModifiedAt = DateTime.UtcNow;
+
+                var userId = User.FindFirstValue("UId");
+                department.ModifiedBy = userId;
+
+                await _departmentRepository.Update(department);
+
+                return Ok(new BaseResponse<Departments> { Success = true, Data = department });
             }
             catch (Exception ex)
             {
-                response.Message = ex.Message;
+                return StatusCode(StatusCodes.Status500InternalServerError, new BaseResponse<Departments> { Success = false, Message = ex.Message });
             }
-            return Ok(response);
         }
 
-        [HttpDelete("DeactivateDept{DepartmentId:long}")]
-        [Authorize]
-        public async Task<IActionResult> DeactivateDept([FromRoute]long DepartmentId)
+        [HttpDelete("DeleteDepartment/{id:long}")]
+        public async Task<ActionResult<BaseResponse<bool>>> DeleteDepartment(long id)
         {
-            BaseResponse<Departments> response = new();
             try
             {
-                var dept = await _departmentRepository.Get(DepartmentId);
-                if (dept == null)
+                var department = await _departmentRepository.Get(id);
+                if (department == null)
                 {
-                    response.Message = "No Department Found";
+                    return NotFound(new BaseResponse<bool> { Success = false, Message = "Department not found" });
                 }
 
-                dept.Active = 0;
-                await _departmentRepository.Update(dept);
-                response.Success = true;
+                await _departmentRepository.Delete(department);
+
+                return Ok(new BaseResponse<bool> { Success = true });
             }
             catch (Exception ex)
             {
-                response.Message = ex.Message;
+                return StatusCode(StatusCodes.Status500InternalServerError, new BaseResponse<bool> { Success = false, Message = ex.Message });
             }
-            return Ok(response);
+        }
+
+        [HttpPatch("AssignDepartmentHead/{departmentId:long}/{managerId:long}")]
+        public async Task<ActionResult<BaseResponse<Departments>>> AssignDepartmentHead(long departmentId, long managerId)
+        {
+            try
+            {
+                var department = await _departmentRepository.Get(departmentId);
+                if (department == null)
+                {
+                    return NotFound(new BaseResponse<Departments> { Success = false, Message = "Department not found" });
+                }
+
+                var manager = await _managerRepository.Get(managerId);
+                if (manager == null)
+                {
+                    return NotFound(new BaseResponse<Departments> { Success = false, Message = "Manager not found" });
+                }
+
+                var existingDepartment = await _departmentRepository.GetByCondition(d => d.ManagerId == managerId);
+                if (existingDepartment != null)
+                {
+                    return BadRequest(new BaseResponse<Departments> { Success = false, Message = "Manager is already assigned to another department" });
+                }
+
+                department.ManagerId = managerId;
+                department.DepartmentHead = manager.FirstName;
+                department.ModifiedAt = DateTime.UtcNow;
+
+                var userId = User.FindFirstValue("UId");
+                department.ModifiedBy = userId;
+
+                await _departmentRepository.Update(department);
+
+                manager.DepartmentId = departmentId;
+                await _managerRepository.Update(manager);
+
+                return Ok(new BaseResponse<Departments> { Success = true, Data = department });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new BaseResponse<Departments> { Success = false, Message = ex.Message });
+            }
         }
     }
 }

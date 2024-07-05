@@ -18,6 +18,7 @@ namespace lms.api.Models
         [Required]
         [MaxLength(10)]
         public string MobileNumber { get; set; }
+        public long? DepartmentId { get; set; }
         public int Active { get; set; } = 1;
         public string? CreatedBy { get; set; }
         public DateTime? CreatedAt { get; set; }

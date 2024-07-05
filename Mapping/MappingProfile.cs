@@ -8,11 +8,11 @@ namespace lms.api.Mapping
     {
         public MappingProfile()
         {
-            CreateMap<Employees, CreateEmployeeRequest>().ReverseMap();
-            CreateMap<Departments, CreateDepartmentRequest>().ReverseMap();
             CreateMap<Managers, CreateManagerRequest>().ReverseMap();
+            CreateMap<Employees, CreateEmployeeRequest>().ReverseMap();
             CreateMap<Usermaster, CreateManagerRequest>().ReverseMap();
             CreateMap<Usermaster, CreateEmployeeRequest>().ReverseMap();
+            CreateMap<Departments, CreateDepartmentRequest>().ReverseMap();
         }
     }
 }
