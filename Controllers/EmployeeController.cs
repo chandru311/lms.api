@@ -47,6 +47,22 @@ namespace lms.api.Controllers
             return Ok(response);
         }
 
+        [HttpGet]
+        [Authorize]
+        public IActionResult GetEmployeeByPagination(PaginationRequest reqModel)
+        {
+            PaginationResponse<IQueryable<Employees>> response = new();
+            try
+            {
+                response = _employeeRepository.GetByPagination(reqModel, null);
+            }
+            catch (Exception ex)
+            {
+                response.Message = ex.Message;
+            }
+            return Ok(response);
+        }
+
         [HttpGet("GetEmployeesByManagerId")]
         [Authorize]
         public async Task<IActionResult> GetEmployeeByManagerId()

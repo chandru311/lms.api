@@ -18,5 +18,22 @@ namespace lms.api.Models.RequestModels
         public string MobileNumber { get; set; }
         [Required]
         public string Password { get; set; }
+
+        [Required]
+        public string? Country { get; set; }
+
+        [Required]
+        public string? City { get; set; }
+
+        [Required]
+        public string? State { get; set; }
+
+        [Required]
+        public string DOB { get; set; }
+
+        [Required]
+        public string DateOfJoining { get; set; }
+        [Required]
+        public string? Address { get; set; }
     }
 }

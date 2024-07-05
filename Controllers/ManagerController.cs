@@ -19,7 +19,6 @@ namespace lms.api.Controllers
         private readonly IGenericRepository<Managers> _managerRepository;
         private readonly IGenericRepository<Usermaster> _userRepository;
         private readonly IMapper _mapper;
-        private readonly ApplicationDbContext _context;
         private string _loggedInUserId;
         public ManagerController(IGenericRepository<Managers> managerRepository, IMapper mapper,
             IGenericRepository<Usermaster> userRepository)
