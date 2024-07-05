@@ -6,7 +6,5 @@ namespace lms.api.Models.RequestModels
     {
         [Required]
         public string DepartmentName { get; set; }
-        [Required]
-        public long ManagerEmployeeId { get; set; }
     }
 }

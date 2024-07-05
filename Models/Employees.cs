@@ -1,7 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Reflection.Metadata;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace lms.api.Models
 {
@@ -46,6 +43,7 @@ namespace lms.api.Models
         public string DateOfJoining { get; set; }
         [Required]
         public string? Address { get; set; }
+        public long? DepartmentId { get; set; }
         public int Active { get; set; } = 1;
 
         public string? CreatedBy { get; set; }

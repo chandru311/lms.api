@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace lms.api.Migrations
 {
     /// <inheritdoc />
-    public partial class merge : Migration
+    public partial class InitialCommit : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -18,7 +18,9 @@ namespace lms.api.Migrations
                     DepartmentId = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     DepartmentName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ManagerId = table.Column<long>(type: "bigint", nullable: false),
+                    ManagerId = table.Column<long>(type: "bigint", nullable: true),
+                    DepartmentHead = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    EmployeesCount = table.Column<long>(type: "bigint", nullable: true),
                     Active = table.Column<int>(type: "int", nullable: false),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -49,6 +51,7 @@ namespace lms.api.Migrations
                     DOB = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     DateOfJoining = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    DepartmentId = table.Column<long>(type: "bigint", nullable: true),
                     Active = table.Column<int>(type: "int", nullable: false),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -91,6 +94,7 @@ namespace lms.api.Migrations
                     LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     MobileNumber = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    DepartmentId = table.Column<long>(type: "bigint", nullable: true),
                     Active = table.Column<int>(type: "int", nullable: false),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),

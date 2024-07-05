@@ -12,8 +12,8 @@ using lms.api.Data;
 namespace lms.api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240628042207_merge")]
-    partial class merge
+    [Migration("20240705045341_InitialCommit")]
+    partial class InitialCommit
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -42,11 +42,17 @@ namespace lms.api.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("DepartmentHead")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("DepartmentName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("ManagerId")
+                    b.Property<long?>("EmployeesCount")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("ManagerId")
                         .HasColumnType("bigint");
 
                     b.Property<DateTime?>("ModifiedAt")
@@ -96,6 +102,9 @@ namespace lms.api.Migrations
                     b.Property<string>("DateOfJoining")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<long?>("DepartmentId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -192,6 +201,9 @@ namespace lms.api.Migrations
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<long?>("DepartmentId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Email")
                         .IsRequired()
