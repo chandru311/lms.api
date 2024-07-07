@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using lms.api.Data;
 using lms.api.Models;
 using lms.api.Models.RequestModels;
 using lms.api.Models.ResponseModels;
@@ -17,17 +18,17 @@ namespace lms.api.Controllers
     {
         private readonly IGenericRepository<Usermaster> _userRepository;
         private readonly IGenericRepository<Employees> _employeeRepository;
-        private readonly IGenericRepository<Managers> _managersRepository;
         private readonly IMapper _mapper;
+        private readonly ApplicationDbContext _context;
         private string _loggedInUserId;
 
         public EmployeeController(IGenericRepository<Usermaster> userRepository, IMapper mapper,
-            IGenericRepository<Employees> employeeRepository, IGenericRepository<Managers> managersRepository)
+            IGenericRepository<Employees> employeeRepository, ApplicationDbContext context)
         {
             _userRepository = userRepository;
             _mapper = mapper;
             _employeeRepository = employeeRepository;
-            _managersRepository = managersRepository;
+            _context = context;
         }
 
         private void GetLoggedInUserId()
@@ -47,31 +48,7 @@ namespace lms.api.Controllers
             return Ok(response);
         }
 
-        [HttpGet("GetEmployeesByManagerId")]
-        [Authorize]
-        public async Task<IActionResult> GetEmployeeByManagerId()
-        {
-            GetLoggedInUserId();
-            BaseResponse<List<Managers>> response = new();
-            try
-            {
-                var manager = await _userRepository.GetByCondition(x => x.UId == Convert.ToInt64(_loggedInUserId));
-                var employeeId = manager.EmployeeId;
-
-                var employees = await _managersRepository.Find(x => x.EmployeeId == employeeId);
-                
-                response.Success = true;
-                response.Data = employees;
-            }
-            catch (Exception ex)
-            {
-                response.Message = ex.Message;
-            }
-            return Ok(response);
-            
-        }
-
-        [HttpGet("{EmployeeId:long}")]
+        [HttpGet("GetEmployeeById/{EmployeeId:long}")]
         [Authorize]
         public async Task<IActionResult> GetEmployee([FromRoute] long EmployeeId)
         {
@@ -112,15 +89,9 @@ namespace lms.api.Controllers
                     }
 
                     var user = _userRepository.IsRecordExists(x => x.EmployeeId == reqModel.EmployeeId);
-                    var manager = _managersRepository.IsRecordExists(x => x.ManagerId == reqModel.ManagerId);
                     if (user)
                     {
                         resp.Message = "EmployeeId Already Exists";
-                        return Ok(resp);
-                    }
-                    else if (!manager)
-                    {
-                        resp.Message = "Manager Not Found";
                         return Ok(resp);
                     }
 
@@ -135,6 +106,23 @@ namespace lms.api.Controllers
 
                     await _employeeRepository.Create(employeeEntity);
                     await _userRepository.Create(userEntity);
+
+                    var leaveSumEntity = new LeaveSum
+                    {
+                        EmployeeId = employeeEntity.EmployeeId,
+                        UserType = (int)UserTypes.Employee,
+                        Name = reqModel.FirstName,
+                        LeavesAva = 0,
+                        LeavesTaken = 0,
+                        SickLeave = 10,
+                        CasualLeave = 10,
+                        PaidLeave = 20,
+                        UnpaidLeave = 0,
+                        Others = 0,
+                    };
+
+                    _context.LeaveSums.Add(leaveSumEntity);
+                    await _context.SaveChangesAsync();
 
                     resp.Success = true;
                 }
@@ -208,9 +196,9 @@ namespace lms.api.Controllers
             return Ok(resp);
         }
 
-        [HttpDelete("DeactivateEmployee/{EmployeeId:long}")]
+        [HttpPut("Active_Deactive/{EmployeeId:long}")]
         [Authorize]
-        public async Task<IActionResult> DeactivateEmployee(long EmployeeId)
+        public async Task<IActionResult> ChangeEmployeeStatus(long EmployeeId, [FromQuery] bool isActive)
         {
             BaseResponse<Employees> resp = new();
             try
@@ -224,10 +212,11 @@ namespace lms.api.Controllers
                 }
                 else
                 {
-                    userDb.Active = 0;
-                    employeeDb.Active = 0;
+                    userDb.Active = isActive ? 1 : 0;
+                    employeeDb.Active = isActive ? 1 : 0;
                     await _userRepository.Update(userDb);
                     await _employeeRepository.Update(employeeDb);
+                    resp.Success = true;
                 }
             }
             catch (Exception ex)
@@ -238,33 +227,30 @@ namespace lms.api.Controllers
             return Ok(resp);
         }
 
-        [HttpPut("ActivateEmployee/{EmployeeId:long}")]
+        [HttpDelete("DeleteEmployee/{EmployeeId:long}")]
         [Authorize]
-        public async Task<IActionResult> ActivateEmployee(long EmployeeId)
+        public async Task<IActionResult> DeleteEmployee(long EmployeeId)
         {
             BaseResponse<Employees> resp = new();
             try
             {
-                var userDb = await _userRepository.Get(EmployeeId);
-                var employeeDb = await _employeeRepository.Get(EmployeeId);
+                var employee = await _employeeRepository.Get(EmployeeId);
+                var user = await _userRepository.Get(EmployeeId);
 
-                if (userDb == null || employeeDb == null)
+                if (employee == null || user == null)
                 {
-                    resp.Message = "User Not Found";
+                    resp.Message = "Employee Not Found";
+                    return Ok(resp);
                 }
-                else
-                {
-                    userDb.Active = 1;
-                    employeeDb.Active = 1;
-                    await _userRepository.Update(userDb);
-                    await _employeeRepository.Update(employeeDb);
-                }
+
+                await _employeeRepository.Delete(employee);
+                await _userRepository.Delete(user);
+                resp.Success = true;
             }
             catch (Exception ex)
             {
                 resp.Message = ex.Message;
             }
-
             return Ok(resp);
         }
     }

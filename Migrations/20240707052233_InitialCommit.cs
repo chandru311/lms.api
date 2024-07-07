@@ -39,18 +39,18 @@ namespace lms.api.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     EmployeeId = table.Column<long>(type: "bigint", nullable: false),
-                    ManagerId = table.Column<long>(type: "bigint", nullable: false),
                     FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     MiddleName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    MobileNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    MobileNumber = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
                     Country = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     City = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     State = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Street = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    HomeNo = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     DOB = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     DateOfJoining = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     DepartmentId = table.Column<long>(type: "bigint", nullable: true),
                     Active = table.Column<int>(type: "int", nullable: false),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -75,12 +75,35 @@ namespace lms.api.Migrations
                     ToDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Reason = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
+                    ReViewedBy = table.Column<long>(type: "bigint", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Leaves", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "LeaveSums",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    EmployeeId = table.Column<long>(type: "bigint", nullable: false),
+                    UserType = table.Column<int>(type: "int", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LeavesAva = table.Column<long>(type: "bigint", nullable: false),
+                    LeavesTaken = table.Column<long>(type: "bigint", nullable: false),
+                    SickLeave = table.Column<long>(type: "bigint", nullable: false),
+                    CasualLeave = table.Column<long>(type: "bigint", nullable: false),
+                    PaidLeave = table.Column<long>(type: "bigint", nullable: false),
+                    UnpaidLeave = table.Column<long>(type: "bigint", nullable: false),
+                    Others = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LeaveSums", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -91,9 +114,17 @@ namespace lms.api.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     EmployeeId = table.Column<long>(type: "bigint", nullable: false),
                     FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    MiddleName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     MobileNumber = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    Country = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    City = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    State = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Street = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    HomeNo = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    DOB = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    DateOfJoining = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     DepartmentId = table.Column<long>(type: "bigint", nullable: true),
                     Active = table.Column<int>(type: "int", nullable: false),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -140,6 +171,9 @@ namespace lms.api.Migrations
 
             migrationBuilder.DropTable(
                 name: "Leaves");
+
+            migrationBuilder.DropTable(
+                name: "LeaveSums");
 
             migrationBuilder.DropTable(
                 name: "Managers");

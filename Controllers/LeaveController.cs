@@ -17,14 +17,54 @@ namespace lms.api.Controllers
     public class LeaveController : ControllerBase
     {
         private readonly IGenericRepository<Leave> _leaveRepository;
+        private readonly IGenericRepository<LeaveSum> _leaveSumRepository;
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
 
-        public LeaveController(IGenericRepository<Leave> leaveRepository, ApplicationDbContext context, IMapper mapper)
+        public LeaveController(
+            IGenericRepository<Leave> leaveRepository,
+            IGenericRepository<LeaveSum> leaveSumRepository,
+            ApplicationDbContext context,
+            IMapper mapper)
         {
             _leaveRepository = leaveRepository;
+            _leaveSumRepository = leaveSumRepository;
             _context = context;
             _mapper = mapper;
+        }
+
+        [HttpGet("GetAllLeaves")]
+        [Authorize]
+        public async Task<IActionResult> GetAllLeaves()
+        {
+            try
+            {
+                var leaves = await _leaveRepository.GetAll();
+                return Ok(new BaseResponse<IEnumerable<Leave>> { Success = true, Data = leaves });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new BaseResponse<IEnumerable<Leave>> { Success = false, Message = ex.Message });
+            }
+        }
+
+        [HttpGet("GetLeavesByEmployeeId/{employeeId:long}")]
+        [Authorize]
+        public async Task<IActionResult> GetLeavesByEmployeeId(long employeeId)
+        {
+            try
+            {
+                var leaves = await _leaveRepository.Find(l => l.EmployeeId == employeeId);
+                if (leaves == null || !leaves.Any())
+                {
+                    return NotFound(new BaseResponse<IEnumerable<Leave>> { Success = false, Message = "No leave requests found for the given employee ID" });
+                }
+                return Ok(new BaseResponse<IEnumerable<Leave>> { Success = true, Data = leaves });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new BaseResponse<IEnumerable<Leave>> { Success = false, Message = ex.Message });
+            }
         }
 
         [HttpPost("ApplyLeave")]
@@ -68,40 +108,6 @@ namespace lms.api.Controllers
             }
         }
 
-        [HttpGet("GetAllLeaves")]
-        [Authorize]
-        public async Task<IActionResult> GetAllLeaves()
-        {
-            try
-            {
-                var leaves = await _leaveRepository.GetAll();
-                return Ok(new BaseResponse<IEnumerable<Leave>> { Success = true, Data = leaves });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new BaseResponse<IEnumerable<Leave>> { Success = false, Message = ex.Message });
-            }
-        }
-
-        [HttpGet("GetLeavesByEmployeeId/{employeeId:long}")]
-        [Authorize]
-        public async Task<IActionResult> GetLeavesByEmployeeId(long employeeId)
-        {
-            try
-            {
-                var leaves = await _leaveRepository.Find(l => l.EmployeeId == employeeId);
-                if (leaves == null || !leaves.Any())
-                {
-                    return NotFound(new BaseResponse<IEnumerable<Leave>> { Success = false, Message = "No leave requests found for the given employee ID" });
-                }
-                return Ok(new BaseResponse<IEnumerable<Leave>> { Success = true, Data = leaves });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new BaseResponse<IEnumerable<Leave>> { Success = false, Message = ex.Message });
-            }
-        }
-
         [HttpPut("UpdateLeave/{id:long}")]
         [Authorize]
         public async Task<IActionResult> UpdateLeave(long id, [FromBody] ApplyLeaveRequest request)
@@ -142,7 +148,7 @@ namespace lms.api.Controllers
             }
         }
 
-        [HttpPut("ApplyOrRejectLeave/{id:long}")]
+        [HttpPut("Approve_RejectLeave/{id:long}")]
         [Authorize]
         public async Task<IActionResult> ApplyOrRejectLeave(long id, [FromBody] UpdateLeaveStatusRequest request)
         {
@@ -164,6 +170,34 @@ namespace lms.api.Controllers
                     if (request.Status != (int)LeaveStatus.Approved && request.Status != (int)LeaveStatus.Rejected)
                     {
                         return BadRequest(new BaseResponse<Leave> { Success = false, Message = "Invalid status. Only approved or rejected statuses are allowed" });
+                    }
+
+                    if (request.Status == (int)LeaveStatus.Approved)
+                    {
+                        var leaveSum = await _leaveSumRepository.GetByCondition(x => x.EmployeeId == leave.EmployeeId);
+                        if (leaveSum != null)
+                        {
+                            switch (leave.LeaveType)
+                            {
+                                case "SickLeave":
+                                    leaveSum.SickLeave -= 1;
+                                    leaveSum.LeavesTaken += 1;
+                                    break;
+                                case "CasualLeave":
+                                    leaveSum.CasualLeave -= 1;
+                                    leaveSum.LeavesTaken += 1;
+                                    break;
+                                case "PaidLeave":
+                                    leaveSum.PaidLeave -= 1;
+                                    leaveSum.LeavesTaken += 1;
+                                    break;
+                                case "UnpaidLeave":
+                                case "Others":
+                                    leaveSum.LeavesTaken += 1;
+                                    break;
+                            }
+                            await _leaveSumRepository.Update(leaveSum);
+                        }
                     }
 
                     leave.Status = (LeaveStatus)request.Status;
@@ -208,6 +242,5 @@ namespace lms.api.Controllers
                 return StatusCode(500, new BaseResponse<bool> { Success = false, Message = ex.Message });
             }
         }
-
     }
 }

@@ -8,6 +8,7 @@ namespace lms.api.Models.RequestModels
         public long EmployeeId { get; set; }
         [Required]
         public string FirstName { get; set; }
+        public string? MiddleName { get; set; }
         [Required]
         public string LastName { get; set; }
         [Required]
@@ -18,5 +19,20 @@ namespace lms.api.Models.RequestModels
         public string MobileNumber { get; set; }
         [Required]
         public string Password { get; set; }
+        [Required]
+        public string? Country { get; set; }
+        [Required]
+        public string? City { get; set; }
+        [Required]
+        public string? State { get; set; }
+        [Required]
+        public string? Street { get; set; }
+        [Required]
+        public string? HomeNo { get; set; }
+        [Required]
+        public string DOB { get; set; }
+        [Required]
+        public string DateOfJoining { get; set; }
+        public long? DepartmentId { get; set; }
     }
 }

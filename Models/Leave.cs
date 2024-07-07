@@ -19,6 +19,7 @@ namespace lms.api.Models
         public string Reason { get; set; }
         [Required]
         public LeaveStatus Status { get; set; } = LeaveStatus.Pending;
+        public long? ReViewedBy { get; set; }
         public DateTime CreatedAt { get; set; }
         public string CreatedBy { get; set; }
     }
