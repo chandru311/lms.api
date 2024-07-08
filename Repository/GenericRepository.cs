@@ -7,10 +7,12 @@ namespace lms.api.Repository
     public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
         private readonly ApplicationDbContext _context;
+
         public GenericRepository(ApplicationDbContext dbContext)
         {
             _context = dbContext;
         }
+
         public async Task Create(T entity)
         {
             await _context.AddAsync(entity);
@@ -33,12 +35,6 @@ namespace lms.api.Repository
             return await _context.Set<T>().FindAsync(id);
         }
 
-        public bool IsRecordExists(Expression<Func<T, bool>> condition)
-        {
-            var result = _context.Set<T>().Where(condition).Any();
-            return result;
-        }
-
         public async Task<List<T>> Find(Expression<Func<T, bool>> condition)
         {
             return await _context.Set<T>().Where(condition).ToListAsync();
@@ -54,9 +50,26 @@ namespace lms.api.Repository
             _ = _context.Set<T>().Update(entity).Entity;
             await Save();
         }
+
         public async Task<T> GetByCondition(Expression<Func<T, bool>> condition)
         {
             return await _context.Set<T>().FirstOrDefaultAsync(condition);
+        }
+
+        public async Task<long> GenerateUniqueAiIdAsync()
+        {
+            Random random = new Random();
+            long newAiId;
+            bool exists;
+
+            do
+            {
+                newAiId = random.Next(1000, 10000);
+                exists = await _context.Set<T>().AnyAsync(e => EF.Property<long>(e, "AiId") == newAiId);
+            }
+            while (exists);
+
+            return newAiId;
         }
     }
 }

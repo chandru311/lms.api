@@ -16,6 +16,7 @@ namespace lms.api.Data
         public DbSet<Departments> Departments { get; set; }
         public DbSet<Leave> Leaves { get; set; }
         public DbSet<LeaveSum> LeaveSums { get; set; }
+        public DbSet<Address> Address { get; set; }
 
     }
 }

@@ -17,9 +17,11 @@ namespace lms.api.Controllers
         private readonly IGenericRepository<Departments> _departmentRepository;
         private readonly IGenericRepository<Managers> _managerRepository;
         private readonly IGenericRepository<Employees> _employeeRepository;
+        private readonly IGenericRepository<Usermaster> _userRepository;
         private readonly IMapper _mapper;
 
         public DepartmentsController(
+             IGenericRepository<Usermaster> userRepository,
             IGenericRepository<Departments> departmentRepository,
             IGenericRepository<Managers> managerRepository,
             IGenericRepository<Employees> employeeRepository,
@@ -28,18 +30,20 @@ namespace lms.api.Controllers
             _departmentRepository = departmentRepository;
             _managerRepository = managerRepository;
             _employeeRepository = employeeRepository;
+            _userRepository = userRepository;
             _mapper = mapper;
         }
-
         private async Task PopulateDepartmentDetails(Departments department)
         {
-            if (department.ManagerId.HasValue)
+            if (department.DepartmentHeadId != 0)
             {
-                var manager = await _managerRepository.Get(department.ManagerId.Value);
-                department.DepartmentHead = manager?.FirstName;
+                var manager = await _managerRepository.GetByCondition(m => m.AiId == department.DepartmentHeadId);
+                if (manager != null)
+                {
+                    department.DepartmentHead = manager.FirstName;
+                }
             }
 
-            // Count the employees in the department
             var employeesCount = await _employeeRepository.Find(e => e.DepartmentId == department.DepartmentId);
             department.EmployeesCount = employeesCount.Count();
         }
@@ -201,8 +205,8 @@ namespace lms.api.Controllers
             }
         }
 
-        [HttpPatch("AssignDepartmentHead/{departmentId:long}/{managerId:long}")]
-        public async Task<ActionResult<BaseResponse<Departments>>> AssignDepartmentHead(long departmentId, long managerId)
+        [HttpPatch("AssignDepartmentHead/{departmentId:long}/{aiId:long}")]
+        public async Task<ActionResult<BaseResponse<Departments>>> AssignDepartmentHead(long departmentId, long aiId)
         {
             try
             {
@@ -212,19 +216,25 @@ namespace lms.api.Controllers
                     return NotFound(new BaseResponse<Departments> { Success = false, Message = "Department not found" });
                 }
 
-                var manager = await _managerRepository.Get(managerId);
+                var manager = await _managerRepository.Get(aiId);
                 if (manager == null)
                 {
                     return NotFound(new BaseResponse<Departments> { Success = false, Message = "Manager not found" });
                 }
 
-                var existingDepartment = await _departmentRepository.GetByCondition(d => d.ManagerId == managerId);
-                if (existingDepartment != null)
+                var managerUser = await _userRepository.GetByCondition(u => u.AiId == manager.AiId && u.Active == 1 && (u.UserType == 1 || u.UserType == 2));
+                if (managerUser == null)
                 {
-                    return BadRequest(new BaseResponse<Departments> { Success = false, Message = "Manager is already assigned to another department" });
+                    return BadRequest(new BaseResponse<Departments> { Success = false, Message = "Invalid user. Only active managers or admins can be department heads." });
                 }
 
-                department.ManagerId = managerId;
+                var existingDepartment = await _departmentRepository.GetByCondition(d => d.DepartmentHeadId == manager.AiId && d.Active == 1);
+                if (existingDepartment != null)
+                {
+                    return BadRequest(new BaseResponse<Departments> { Success = false, Message = "Manager is already assigned as department head in another active department" });
+                }
+
+                department.DepartmentHeadId = manager.AiId;
                 department.DepartmentHead = manager.FirstName;
                 department.ModifiedAt = DateTime.UtcNow;
 

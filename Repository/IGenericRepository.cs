@@ -10,8 +10,8 @@ namespace lms.api.Repository
         Task Delete(T entity);
         Task Update(T entity);
         Task Save();
+        Task<long> GenerateUniqueAiIdAsync();
         Task<List<T>> Find(Expression<Func<T, bool>> condition);
-        bool IsRecordExists(Expression<Func<T, bool>> condition);
         Task<T> GetByCondition(Expression<Func<T, bool>> condition);
     }
 }

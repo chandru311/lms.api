@@ -6,7 +6,6 @@ using lms.api.Models.ResponseModels;
 using lms.api.Repository;
 using lms.api.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,7 +30,7 @@ namespace lms.api.Controllers
 
         [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> ForgotPassword([FromBody]ForgotPasswordRequest reqModel)
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest reqModel)
         {
             BaseResponse<UsermasterResponse> response = new();
             try
@@ -45,7 +44,7 @@ namespace lms.api.Controllers
                     }
 
                     var emailLink = Request.Headers.Referer;
-                    await _forgotPasswordService.SendForgotPassLink(reqModel.Email, reqModel.Email, user.EmployeeId, emailLink);
+                    await _forgotPasswordService.SendForgotPassLink(reqModel.Email, reqModel.Email, user.AiId, emailLink);
                     var userMasterMap = _mapper.Map<Usermaster, UsermasterResponse>(user);
                     response.Success = true;
                     response.Data = userMasterMap;
@@ -56,7 +55,7 @@ namespace lms.api.Controllers
                     response.Message = "Model is not valid";
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 response.Message = ex.Message;
             }

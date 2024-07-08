@@ -48,13 +48,13 @@ namespace lms.api.Controllers
             }
         }
 
-        [HttpGet("GetLeavesByEmployeeId/{employeeId:long}")]
+        [HttpGet("GetLeavesByEmployeeId/{AiId:long}")]
         [Authorize]
-        public async Task<IActionResult> GetLeavesByEmployeeId(long employeeId)
+        public async Task<IActionResult> GetLeavesByEmployeeId(long AiId)
         {
             try
             {
-                var leaves = await _leaveRepository.Find(l => l.EmployeeId == employeeId);
+                var leaves = await _leaveRepository.Find(l => l.AiId == AiId);
                 if (leaves == null || !leaves.Any())
                 {
                     return NotFound(new BaseResponse<IEnumerable<Leave>> { Success = false, Message = "No leave requests found for the given employee ID" });
@@ -75,7 +75,7 @@ namespace lms.api.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    var loggedInUserId = User.FindFirstValue("UId");
+                    var loggedInUserId = User.FindFirstValue("AiId");
                     if (loggedInUserId == null)
                     {
                         return Unauthorized(new BaseResponse<Leave> { Success = false, Message = "Invalid User" });
@@ -83,7 +83,7 @@ namespace lms.api.Controllers
 
                     var leave = new Leave
                     {
-                        EmployeeId = request.EmployeeId,
+                        AiId = request.AiId,
                         LeaveType = request.LeaveType,
                         FromDate = request.FromDate,
                         ToDate = request.ToDate,
@@ -108,15 +108,15 @@ namespace lms.api.Controllers
             }
         }
 
-        [HttpPut("UpdateLeave/{id:long}")]
+        [HttpPut("UpdateLeave/{LeaveId:long}")]
         [Authorize]
-        public async Task<IActionResult> UpdateLeave(long id, [FromBody] ApplyLeaveRequest request)
+        public async Task<IActionResult> UpdateLeave(long LeaveId, [FromBody] ApplyLeaveRequest request)
         {
             try
             {
                 if (ModelState.IsValid)
                 {
-                    var leave = await _leaveRepository.Get(id);
+                    var leave = await _leaveRepository.Get(LeaveId);
                     if (leave == null)
                     {
                         return NotFound(new BaseResponse<Leave> { Success = false, Message = "Leave request not found" });
@@ -148,15 +148,15 @@ namespace lms.api.Controllers
             }
         }
 
-        [HttpPut("Approve_RejectLeave/{id:long}")]
+        [HttpPut("Approve_RejectLeave/{LeaveId:long}")]
         [Authorize]
-        public async Task<IActionResult> ApplyOrRejectLeave(long id, [FromBody] UpdateLeaveStatusRequest request)
+        public async Task<IActionResult> ApplyOrRejectLeave(long LeaveId, [FromBody] UpdateLeaveStatusRequest request)
         {
             try
             {
                 if (ModelState.IsValid)
                 {
-                    var leave = await _leaveRepository.Get(id);
+                    var leave = await _leaveRepository.Get(LeaveId);
                     if (leave == null)
                     {
                         return NotFound(new BaseResponse<Leave> { Success = false, Message = "Leave request not found" });
@@ -174,7 +174,7 @@ namespace lms.api.Controllers
 
                     if (request.Status == (int)LeaveStatus.Approved)
                     {
-                        var leaveSum = await _leaveSumRepository.GetByCondition(x => x.EmployeeId == leave.EmployeeId);
+                        var leaveSum = await _leaveSumRepository.GetByCondition(x => x.AiId == leave.AiId);
                         if (leaveSum != null)
                         {
                             switch (leave.LeaveType)
@@ -216,13 +216,13 @@ namespace lms.api.Controllers
             }
         }
 
-        [HttpDelete("DeleteLeave/{id:long}")]
+        [HttpDelete("DeleteLeave/{LeaveId:long}")]
         [Authorize]
-        public async Task<IActionResult> DeleteLeave(long id)
+        public async Task<IActionResult> DeleteLeave(long LeaveId)
         {
             try
             {
-                var leave = await _leaveRepository.Get(id);
+                var leave = await _leaveRepository.Get(LeaveId);
                 if (leave == null)
                 {
                     return NotFound(new BaseResponse<bool> { Success = false, Message = "Leave request not found" });

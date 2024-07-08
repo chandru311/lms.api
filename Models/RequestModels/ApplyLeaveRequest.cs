@@ -6,19 +6,19 @@ namespace lms.api.Models.RequestModels
     public class ApplyLeaveRequest
     {
         [Required]
-        public long EmployeeId { get; set; }
+        public long AiId { get; set; }
 
         [Required]
         public string LeaveType { get; set; }
 
         [Required]
-        public DateTime FromDate { get; set; }
+        public DateOnly FromDate { get; set; }
 
         [Required]
-        public DateTime ToDate { get; set; }
+        public DateOnly ToDate { get; set; }
 
         [Required]
-        [MaxLength(500)]
+        [MaxLength(100)]
         public string Reason { get; set; }
 
         [Required]

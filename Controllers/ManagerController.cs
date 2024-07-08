@@ -6,6 +6,7 @@ using lms.api.Repository;
 using lms.api.Types;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace lms.api.Controllers
@@ -34,35 +35,10 @@ namespace lms.api.Controllers
 
         private void GetLoggedInUserId()
         {
-            _loggedInUserId = User.FindFirstValue("UId");
+            _loggedInUserId = User.FindFirstValue("AiId");
         }
 
-        [HttpGet("GetManagerById/{ManagerId:long}")]
-        [Authorize]
-        public async Task<IActionResult> GetManagerById([FromRoute] long ManagerId)
-        {
-            BaseResponse<Managers> response = new();
-            try
-            {
-                var manager = await _managerRepository.Get(ManagerId);
-                if (manager == null)
-                {
-                    response.Message = "Manager Not Found";
-                }
-                else
-                {
-                    response.Success = true;
-                    response.Data = manager;
-                }
-            }
-            catch (Exception ex)
-            {
-                response.Message = ex.Message;
-            }
-            return Ok(response);
-        }
-
-        [HttpGet("GetAllManager")]
+        [HttpGet("GetAllManagers")]
         [Authorize]
         public async Task<IActionResult> GetAllManagers()
         {
@@ -80,30 +56,63 @@ namespace lms.api.Controllers
             return Ok(response);
         }
 
+        [HttpGet("GetManagerById/{AiID:long}")]
+        [Authorize]
+        public async Task<IActionResult> GetManagerById([FromRoute] long AiId)
+        {
+            BaseResponse<Managers> response = new();
+            try
+            {
+                var manager = await _managerRepository.Get(AiId);
+                if (manager == null)
+                {
+                    response.Message = "Manager Not Found";
+                }
+                else
+                {
+                    response.Success = true;
+                    response.Data = manager;
+                }
+            }
+            catch (Exception ex)
+            {
+                response.Message = ex.Message;
+            }
+            return Ok(response);
+        }
+
         [HttpPost("AddManager")]
         [Authorize]
         public async Task<IActionResult> CreateManager([FromBody] CreateManagerRequest reqModel)
         {
-            GetLoggedInUserId();
             BaseResponse<Managers> response = new();
             try
             {
                 if (ModelState.IsValid)
                 {
-                    var isManagerExistInManagerDB = _managerRepository.IsRecordExists(x => x.EmployeeId == reqModel.EmployeeId);
-                    var isManagerExistUserDb = _userRepository.IsRecordExists(x => x.EmployeeId == reqModel.EmployeeId);
+                    GetLoggedInUserId();
+                    if (_loggedInUserId == null)
+                    {
+                        response.Message = "Unable to retrieve logged-in user's ID";
+                        return Ok(response);
+                    }
+
+                    var isManagerExistInManagerDB = await _managerRepository.GetByCondition(x => x.Email == reqModel.Email) != null;
+                    var isManagerExistUserDb = await _userRepository.GetByCondition(x => x.Email == reqModel.Email) != null;
 
                     if (isManagerExistInManagerDB || isManagerExistUserDb)
                     {
-                        response.Message = "EmployeeId Already Exists";
+                        response.Message = "Email Already Exists";
                         return Ok(response);
                     }
 
                     var managerMap = _mapper.Map<Managers>(reqModel);
+                    managerMap.AiId = await _managerRepository.GenerateUniqueAiIdAsync();
                     managerMap.CreatedBy = _loggedInUserId;
                     managerMap.CreatedAt = DateTime.UtcNow;
 
                     var managerMapForUserDb = _mapper.Map<Usermaster>(reqModel);
+                    managerMapForUserDb.AiId = managerMap.AiId;
                     managerMapForUserDb.CreatedBy = _loggedInUserId;
                     managerMapForUserDb.CreatedAt = DateTime.UtcNow;
                     managerMapForUserDb.UserType = (int)UserTypes.Manager;
@@ -111,11 +120,10 @@ namespace lms.api.Controllers
                     await _userRepository.Create(managerMapForUserDb);
                     await _managerRepository.Create(managerMap);
 
-                    // Create entry in LeaveSum table
                     var leaveSumEntry = new LeaveSum
                     {
-                        EmployeeId = managerMapForUserDb.EmployeeId,
-                        UserType = (int)UserTypes.Employee,
+                        AiId = managerMapForUserDb.AiId,
+                        UserType = (int)UserTypes.Manager,
                         Name = reqModel.FirstName,
                         LeavesAva = 0,
                         LeavesTaken = 0,
@@ -134,33 +142,36 @@ namespace lms.api.Controllers
                 {
                     response.Message = "Model is not valid";
                 }
-                return Ok(response);
+            }
+            catch (DbUpdateException dbEx)
+            {
+                response.Message = $"An error occurred while saving the entity changes. See the inner exception for details: {dbEx.InnerException?.Message}";
             }
             catch (Exception ex)
             {
-                response.Message = ex.Message;
+                response.Message = $"An unexpected error occurred: {ex.Message}";
             }
             return Ok(response);
         }
 
-        [HttpPut("UpdateManager/{ManagerId:long}")]
+        [HttpPut("UpdateManager/{AiId:long}")]
         [Authorize]
-        public async Task<IActionResult> UpdateManager([FromRoute] long ManagerId, [FromBody] CreateManagerRequest reqModel)
+        public async Task<IActionResult> UpdateManager([FromRoute] long AiId, [FromBody] CreateManagerRequest reqModel)
         {
-            GetLoggedInUserId();
             BaseResponse<Managers> response = new();
             try
             {
                 if (ModelState.IsValid)
                 {
-                    var manager = await _managerRepository.Get(ManagerId);
+                    GetLoggedInUserId();
+                    var manager = await _managerRepository.Get(AiId);
                     if (manager == null)
                     {
                         response.Message = "Manager Not Found";
                         return Ok(response);
                     }
 
-                    var managerFromUserDb = await _userRepository.GetByCondition(x => x.EmployeeId == manager.EmployeeId);
+                    var managerFromUserDb = await _userRepository.GetByCondition(x => x.AiId == manager.AiId);
                     _mapper.Map(reqModel, managerFromUserDb);
                     managerFromUserDb.ModifiedBy = _loggedInUserId;
                     managerFromUserDb.ModifiedAt = DateTime.UtcNow;
@@ -188,14 +199,14 @@ namespace lms.api.Controllers
             return Ok(response);
         }
 
-        [HttpPut("Active_Deactive/{ManagerId:long}")]
+        [HttpPut("Active_Deactive/{AiId:long}")]
         [Authorize]
-        public async Task<IActionResult> ChangeManagerStatus(long ManagerId, [FromQuery] bool isActive)
+        public async Task<IActionResult> ChangeManagerStatus(long AiId, [FromQuery] bool isActive)
         {
             BaseResponse<Managers> response = new();
             try
             {
-                var manager = await _managerRepository.Get(ManagerId);
+                var manager = await _managerRepository.Get(AiId);
                 if (manager == null)
                 {
                     response.Message = "No Manager Found";
@@ -214,15 +225,15 @@ namespace lms.api.Controllers
             return Ok(response);
         }
 
-        [HttpDelete("DeleteManager/{ManagerId:long}")]
+        [HttpDelete("DeleteManager/{AiId:long}")]
         [Authorize]
-        public async Task<IActionResult> DeleteManager(long ManagerId)
+        public async Task<IActionResult> DeleteManager(long AiId)
         {
             BaseResponse<Managers> response = new();
             try
             {
-                var manager = await _managerRepository.Get(ManagerId);
-                var user = await _userRepository.GetByCondition(x => x.EmployeeId == manager.EmployeeId);
+                var manager = await _managerRepository.Get(AiId);
+                var user = await _userRepository.GetByCondition(x => x.AiId == manager.AiId);
 
                 if (manager == null || user == null)
                 {

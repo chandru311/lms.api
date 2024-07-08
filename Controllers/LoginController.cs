@@ -1,18 +1,15 @@
-﻿using lms.api.Models;
+﻿using lms.api.Data;
+using lms.api.Models;
 using lms.api.Models.RequestModels;
 using lms.api.Models.ResponseModels;
 using lms.api.Repository;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using System;
-using System.Collections.Generic;
-using lms.api.Data;
-using Microsoft.EntityFrameworkCore;
 
 namespace lms.api.Controllers
 {
@@ -38,14 +35,14 @@ namespace lms.api.Controllers
             BaseResponse<AuthenticatedToken> resp = new BaseResponse<AuthenticatedToken>();
             try
             {
-                var user = await _context.Usermasters.FirstOrDefaultAsync(x => x.EmployeeId == reqModel.EmployeeId);
+                var user = await _context.Usermasters.FirstOrDefaultAsync(x => x.AiId == reqModel.AiId);
 
                 if (user == null)
                 {
                     resp.Message = "Invalid Credentials";
                     return resp;
                 }
-                else if(user.Active == 0)
+                else if (user.Active == 0)
                 {
                     resp.Message = "User is Inactive";
                     return resp;
@@ -54,12 +51,11 @@ namespace lms.api.Controllers
                 {
                     var authClaims = new List<Claim>
                     {
-                        new Claim("UId", user.UId.ToString()),
-                        new Claim("EmployeeId", user.EmployeeId.ToString()),
+                        new Claim("AiId", user.AiId.ToString()),
                         new Claim("UserType", user.UserType.ToString()),
                     };
 
-                    var validUserEmployeeId = user.EmployeeId == reqModel.EmployeeId;
+                    var validUserEmployeeId = user.AiId == reqModel.AiId;
                     var validUserPassword = user.Password == reqModel.Password;
 
                     if (validUserEmployeeId && validUserPassword)
@@ -88,8 +84,8 @@ namespace lms.api.Controllers
                         {
                             Token = new JwtSecurityTokenHandler().WriteToken(token),
                             Expiration = token.ValidTo,
-                            EmployeeId = user.EmployeeId,
-                            UserType  = user.UserType,
+                            AiId = user.AiId,
+                            UserType = user.UserType,
 
                         };
                         resp.Success = true;

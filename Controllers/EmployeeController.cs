@@ -22,8 +22,12 @@ namespace lms.api.Controllers
         private readonly ApplicationDbContext _context;
         private string _loggedInUserId;
 
-        public EmployeeController(IGenericRepository<Usermaster> userRepository, IMapper mapper,
-            IGenericRepository<Employees> employeeRepository, ApplicationDbContext context)
+        public EmployeeController(
+            IGenericRepository<Usermaster> userRepository,
+            IGenericRepository<Employees> employeeRepository,
+            ApplicationDbContext context,
+            IMapper mapper
+            )
         {
             _userRepository = userRepository;
             _mapper = mapper;
@@ -33,7 +37,7 @@ namespace lms.api.Controllers
 
         private void GetLoggedInUserId()
         {
-            _loggedInUserId = User.FindFirstValue("UId");
+            _loggedInUserId = User.FindFirstValue("AiId");
         }
 
         [HttpGet("GetAllEmployees")]
@@ -88,14 +92,15 @@ namespace lms.api.Controllers
                         return Ok(resp);
                     }
 
-                    var user = _userRepository.IsRecordExists(x => x.EmployeeId == reqModel.EmployeeId);
-                    if (user)
+                    var user = await _userRepository.GetByCondition(x => x.Email == reqModel.Email);
+                    if (user != null)
                     {
-                        resp.Message = "EmployeeId Already Exists";
+                        resp.Message = "Email Already Exists";
                         return Ok(resp);
                     }
 
                     var userEntity = _mapper.Map<Usermaster>(reqModel);
+                    userEntity.AiId = await _userRepository.GenerateUniqueAiIdAsync();
                     userEntity.CreatedBy = _loggedInUserId;
                     userEntity.CreatedAt = DateTime.UtcNow;
                     userEntity.UserType = (int)UserTypes.Employee;
@@ -109,7 +114,7 @@ namespace lms.api.Controllers
 
                     var leaveSumEntity = new LeaveSum
                     {
-                        EmployeeId = employeeEntity.EmployeeId,
+                        AiId = employeeEntity.AiId,
                         UserType = (int)UserTypes.Employee,
                         Name = reqModel.FirstName,
                         LeavesAva = 0,
@@ -125,19 +130,20 @@ namespace lms.api.Controllers
                     await _context.SaveChangesAsync();
 
                     resp.Success = true;
+                    resp.Message = "Employee created successfully";
+                    return Ok(resp);
                 }
                 else
                 {
-                    resp.Message = "Model is not Valid";
+                    resp.Message = "Model is not valid";
+                    return Ok(resp);
                 }
-
-                return Ok(resp);
             }
             catch (Exception ex)
             {
                 resp.Message = ex.Message;
+                return Ok(resp);
             }
-            return Ok(resp);
         }
 
         [HttpPut("UpdateEmployee/{EmployeeId:long}")]
@@ -175,26 +181,29 @@ namespace lms.api.Controllers
                     employeeFromUserDb.ModifiedAt = DateTime.UtcNow;
 
                     _mapper.Map(reqModel, employee);
-                    employee.CreatedBy = _loggedInUserId;
-                    employee.CreatedAt = DateTime.UtcNow;
+                    employee.ModifiedBy = _loggedInUserId;
+                    employee.ModifiedAt = DateTime.UtcNow;
 
                     await _userRepository.Update(employeeFromUserDb);
                     await _employeeRepository.Update(employee);
 
                     resp.Success = true;
+                    resp.Message = "Employee updated successfully";
+                    return Ok(resp);
                 }
                 else
                 {
-                    resp.Message = "Model is not Valid";
+                    resp.Message = "Model is not valid";
+                    return Ok(resp);
                 }
             }
             catch (Exception ex)
             {
                 resp.Message = ex.Message;
+                return Ok(resp);
             }
-
-            return Ok(resp);
         }
+
 
         [HttpPut("Active_Deactive/{EmployeeId:long}")]
         [Authorize]

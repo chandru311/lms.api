@@ -1,52 +1,33 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 
 namespace lms.api.Models.RequestModels
 {
     public class CreateEmployeeRequest
     {
         [Required]
-        public long EmployeeId { get; set; }
-
-        [Required]
         public string FirstName { get; set; }
+#nullable enable
+        [AllowNull]
         public string? MiddleName { get; set; }
 
-        [Required]
-        public string LastName { get; set; }
-
+        [AllowNull]
+        public string? LastName { get; set; }
+#nullable disable
         [Required]
         [EmailAddress]
         public string Email { get; set; }
 
         [Required]
         [MaxLength(10)]
-        public string MobileNumber { get; set; }
+        public int MobileNumber { get; set; }
 
         [Required]
         public string Password { get; set; }
 
         [Required]
-        public string? Country { get; set; }
-
+        public DateOnly DOB { get; set; }
         [Required]
-        public string? City { get; set; }
-
-        [Required]
-        public string? State { get; set; }
-
-        [Required]
-        public string? Street { get; set; }
-
-        [Required]
-        public string? HomeNo { get; set; }
-
-        [Required]
-        public string DOB { get; set; }
-
-        [Required]
-        public string DateOfJoining { get; set; }
-
-        public long? DepartmentId { get; set; }
-        public int Active { get; set; } = 1;
+        public DateOnly DateOfJoining { get; set; }
     }
 }
