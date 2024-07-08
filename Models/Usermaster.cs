@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace lms.api.Models
 {
@@ -10,6 +11,8 @@ namespace lms.api.Models
         public int UserType { get; set; }
         [Required]
         public long EmployeeId { get; set; }
+        [ForeignKey("EmployeeId")]
+        public Employees Employees { get; set; }
         [Required]
         [MaxLength(10)]
         public string MobileNumber { get; set; }

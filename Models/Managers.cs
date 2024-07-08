@@ -40,5 +40,8 @@ namespace lms.api.Models
         public DateTime? CreatedAt { get; set; }
         public string? ModifiedBy { get; set; }
         public DateTime? ModifiedAt { get; set; }
+
+        public ICollection<Departments> Departments { get; set; }
+        public ICollection<Employees> Employees { get; set; }
     }
 }

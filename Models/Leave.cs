@@ -1,5 +1,6 @@
 ﻿using lms.api.Types;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace lms.api.Models
 {
@@ -9,6 +10,8 @@ namespace lms.api.Models
         public long Id { get; set; }
         [Required]
         public long EmployeeId { get; set; }
+        [ForeignKey("EmployeeId")]
+        public Employees Employees { get; set; }
         [Required]
         public string LeaveType { get; set; }
         [Required]

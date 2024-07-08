@@ -12,7 +12,9 @@ namespace lms.api.Models
         [Required]
         public long EmployeeId { get; set; }
         [Required]
-        public long ManagerId { get; set; }
+        public long? ManagerId { get; set; }
+        [ForeignKey("ManagerId")]
+        public Managers Manager { get; set; }
         [Required]
         public string FirstName { get; set; }
         public string? MiddleName { get; set; }
@@ -40,5 +42,8 @@ namespace lms.api.Models
         public DateTime? CreatedAt { get; set; }
         public string? ModifiedBy { get; set; }
         public DateTime? ModifiedAt { get; set; }
+
+        public ICollection<Usermaster> Usermasters { get; set; }
+        public ICollection<Leave> Leaves { get;}
     }
 }
