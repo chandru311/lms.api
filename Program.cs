@@ -1,3 +1,4 @@
+using cex.web.api.systemadmin.Configuration;
 using lms.api.Config;
 using lms.api.Data;
 using lms.api.Mapping;
@@ -19,8 +20,7 @@ builder.Services.AddCors(op =>
 
 #region Config DB
 
-var connString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connString));
+builder.Services.AddEntityFramework(builder.Configuration);
 
 #endregion
 
