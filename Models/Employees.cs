@@ -7,7 +7,6 @@ namespace lms.api.Models
     {
         [Key]
         public long Id { get; set; }
-
         [Required]
         public long AiId { get; set; }
 
@@ -16,7 +15,8 @@ namespace lms.api.Models
 
         [AllowNull]
         public long? DepartmentId { get; set; }
-
+        [ForeignKey("DepartmentId")]
+        public Department Department { get; set; }
         [Required]
         public string FirstName { get; set; }
 #nullable enable
@@ -29,11 +29,9 @@ namespace lms.api.Models
         [Required]
         [EmailAddress]
         public string Email { get; set; }
-
         [Required]
         [MaxLength(10)]
         public string MobileNumber { get; set; }
-
         [Required]
         public DateOnly DOB { get; set; }
 
@@ -50,5 +48,8 @@ namespace lms.api.Models
         public string? ModifiedBy { get; set; }
         public DateTime? ModifiedAt { get; set; }
 #nullable disable
+        public ICollection<Usermaster> Usermasters { get; set; }
+        public ICollection<LeaveSum> LeaveSum { get; set; }
+        public ICollection<Leave> Leaves { get;}
     }
 }

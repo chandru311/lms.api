@@ -22,6 +22,61 @@ namespace lms.api.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("lms.api.Models.Address", b =>
+                {
+                    b.Property<long>("AddressId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("AddressId"));
+
+                    b.Property<long>("AiId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Country")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("HomeNo")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LandMark")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PostalCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Street")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("AddressId");
+
+                    b.ToTable("Address");
+                });
+
             modelBuilder.Entity("lms.api.Models.Departments", b =>
                 {
                     b.Property<long>("DepartmentId")
@@ -39,17 +94,21 @@ namespace lms.api.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("DepartmentDescription")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("DepartmentHead")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<long?>("DepartmentHeadId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("DepartmentName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<long?>("EmployeesCount")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("ManagerId")
                         .HasColumnType("bigint");
 
                     b.Property<DateTime?>("ModifiedAt")
@@ -74,13 +133,11 @@ namespace lms.api.Migrations
                     b.Property<int>("Active")
                         .HasColumnType("int");
 
-                    b.Property<string>("City")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<long?>("AddressId")
+                        .HasColumnType("bigint");
 
-                    b.Property<string>("Country")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<long>("AiId")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -88,13 +145,11 @@ namespace lms.api.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("DOB")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<DateOnly>("DOB")
+                        .HasColumnType("date");
 
-                    b.Property<string>("DateOfJoining")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<DateOnly>("DateOfJoining")
+                        .HasColumnType("date");
 
                     b.Property<long?>("DepartmentId")
                         .HasColumnType("bigint");
@@ -103,19 +158,11 @@ namespace lms.api.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("EmployeeId")
-                        .HasColumnType("bigint");
-
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("HomeNo")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("LastName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("MiddleName")
@@ -132,14 +179,6 @@ namespace lms.api.Migrations
                     b.Property<string>("ModifiedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("State")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Street")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
 
                     b.ToTable("Employees");
@@ -147,26 +186,32 @@ namespace lms.api.Migrations
 
             modelBuilder.Entity("lms.api.Models.Leave", b =>
                 {
-                    b.Property<long>("Id")
+                    b.Property<long>("LeaveId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("LeaveId"));
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<long>("AiId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("EmployeeId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime>("FromDate")
-                        .HasColumnType("datetime2");
+                    b.Property<DateOnly>("FromDate")
+                        .HasColumnType("date");
 
                     b.Property<string>("LeaveType")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ModifiedBy")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<long?>("ReViewedBy")
@@ -174,15 +219,16 @@ namespace lms.api.Migrations
 
                     b.Property<string>("Reason")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("ToDate")
-                        .HasColumnType("datetime2");
+                    b.Property<DateOnly>("ToDate")
+                        .HasColumnType("date");
 
-                    b.HasKey("Id");
+                    b.HasKey("LeaveId");
 
                     b.ToTable("Leaves");
                 });
@@ -195,10 +241,10 @@ namespace lms.api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
-                    b.Property<long>("CasualLeave")
+                    b.Property<long>("AiId")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("EmployeeId")
+                    b.Property<long>("CasualLeave")
                         .HasColumnType("bigint");
 
                     b.Property<long>("LeavesAva")
@@ -233,22 +279,20 @@ namespace lms.api.Migrations
 
             modelBuilder.Entity("lms.api.Models.Managers", b =>
                 {
-                    b.Property<long>("ManagerId")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ManagerId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<int>("Active")
                         .HasColumnType("int");
 
-                    b.Property<string>("City")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<long?>("AddressId")
+                        .HasColumnType("bigint");
 
-                    b.Property<string>("Country")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<long>("AiId")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -256,13 +300,11 @@ namespace lms.api.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("DOB")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<DateOnly>("DOB")
+                        .HasColumnType("date");
 
-                    b.Property<string>("DateOfJoining")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<DateOnly>("DateOfJoining")
+                        .HasColumnType("date");
 
                     b.Property<long?>("DepartmentId")
                         .HasColumnType("bigint");
@@ -271,19 +313,11 @@ namespace lms.api.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("EmployeeId")
-                        .HasColumnType("bigint");
-
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("HomeNo")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("LastName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("MiddleName")
@@ -300,29 +334,27 @@ namespace lms.api.Migrations
                     b.Property<string>("ModifiedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("State")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Street")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("ManagerId");
+                    b.HasKey("Id");
 
                     b.ToTable("Managers");
                 });
 
             modelBuilder.Entity("lms.api.Models.Usermaster", b =>
                 {
-                    b.Property<long>("UId")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("UId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<int>("Active")
                         .HasColumnType("int");
+
+                    b.Property<long?>("AddressId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("AiId")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -333,9 +365,6 @@ namespace lms.api.Migrations
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<long>("EmployeeId")
-                        .HasColumnType("bigint");
 
                     b.Property<string>("MobileNumber")
                         .IsRequired()
@@ -355,7 +384,7 @@ namespace lms.api.Migrations
                     b.Property<int>("UserType")
                         .HasColumnType("int");
 
-                    b.HasKey("UId");
+                    b.HasKey("Id");
 
                     b.ToTable("Usermasters");
                 });

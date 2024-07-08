@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
 namespace lms.api.Models
@@ -10,7 +11,8 @@ namespace lms.api.Models
 
         [AllowNull]
         public long? DepartmentHeadId { get; set; }
-
+        [ForeignKey("AiId")]
+        public UserMaster UserMaster { get; set; }
         [Required]
         public string DepartmentName { get; set; }
 
@@ -28,9 +30,11 @@ namespace lms.api.Models
 #nullable enable
         [AllowNull]
         public string? CreatedBy { get; set; }
+
         public DateTime? CreatedAt { get; set; }
         [AllowNull]
         public string? ModifiedBy { get; set; }
+
         public DateTime? ModifiedAt { get; set; }
 #nullable disable
     }

@@ -52,7 +52,47 @@ namespace lms.api.Controllers
             return Ok(response);
         }
 
-        [HttpGet("GetEmployeeById/{EmployeeId:long}")]
+        [HttpGet]
+        [Authorize]
+        public IActionResult GetEmployeeByPagination(PaginationRequest reqModel)
+        {
+            PaginationResponse<IQueryable<Employees>> response = new();
+            try
+            {
+                response = _employeeRepository.GetByPagination(reqModel, null);
+            }
+            catch (Exception ex)
+            {
+                response.Message = ex.Message;
+            }
+            return Ok(response);
+        }
+
+        [HttpGet("GetEmployeesByManagerId")]
+        [Authorize]
+        public async Task<IActionResult> GetEmployeeByManagerId()
+        {
+            GetLoggedInUserId();
+            BaseResponse<List<Managers>> response = new();
+            try
+            {
+                var manager = await _userRepository.GetByCondition(x => x.UId == Convert.ToInt64(_loggedInUserId));
+                var employeeId = manager.EmployeeId;
+
+                var employees = await _managersRepository.Find(x => x.EmployeeId == employeeId);
+                
+                response.Success = true;
+                response.Data = employees;
+            }
+            catch (Exception ex)
+            {
+                response.Message = ex.Message;
+            }
+            return Ok(response);
+            
+        }
+
+        [HttpGet("{EmployeeId:long}")]
         [Authorize]
         public async Task<IActionResult> GetEmployee([FromRoute] long EmployeeId)
         {
