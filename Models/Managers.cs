@@ -50,6 +50,7 @@ namespace lms.api.Models
         public string? ModifiedBy { get; set; }
         public DateTime? ModifiedAt { get; set; }
 #nullable disable
+
         public ICollection<Employees> Employees { get; set; }
     }
 }

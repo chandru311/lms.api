@@ -1,5 +1,5 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 
 namespace lms.api.Models
@@ -12,16 +12,19 @@ namespace lms.api.Models
         [AllowNull]
         public long? DepartmentHeadId { get; set; }
         [ForeignKey("AiId")]
-        public UserMaster UserMaster { get; set; }
+        public Usermaster UserMaster { get; set; }
+
         [Required]
         public string DepartmentName { get; set; }
 
         [Required]
         public string DepartmentDescription { get; set; }
+
 #nullable enable
         [AllowNull]
         public string? DepartmentHead { get; set; }
 #nullable disable
+
         [AllowNull]
         public long? EmployeesCount { get; set; }
 

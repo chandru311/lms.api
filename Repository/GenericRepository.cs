@@ -59,6 +59,24 @@ namespace lms.api.Repository
             return await _context.Set<T>().FirstOrDefaultAsync(condition);
         }
 
+
+
+        public async Task<long> GenerateUniqueAiIdAsync()
+        {
+            Random random = new Random();
+            long newAiId;
+            bool exists;
+
+            do
+            {
+                newAiId = random.Next(1000, 10000);
+                exists = await _context.Set<T>().AnyAsync(e => EF.Property<long>(e, "AiId") == newAiId);
+            }
+            while (exists);
+
+            return newAiId;
+        }
+
         public PaginationResponse<IQueryable<T>> GetByPagination(PaginationRequest paginationRequest, Expression<Func<T, bool>> expression)
         {
             PaginationResponse<IQueryable<T>> response = new();
@@ -66,12 +84,12 @@ namespace lms.api.Repository
             {
                 var data = _context.Set<T>();
                 IQueryable<T> result = data;
-                if(paginationRequest != null)
+                if (paginationRequest != null)
                 {
-                    if(paginationRequest.FilterCoulmn != null && paginationRequest.FilterCoulmn.Length != 0)
+                    if (paginationRequest.FilterCoulmn != null && paginationRequest.FilterCoulmn.Length != 0)
                     {
                         var expr = ApplyFilter(result, paginationRequest.FilterCoulmn, null);
-                        if(expression != null)
+                        if (expression != null)
                         {
                             var parameter = expr.Parameters[0];
                             var body = Expression.AndAlso(expr.Body, Expression.Invoke(expression, parameter));
@@ -82,13 +100,13 @@ namespace lms.api.Repository
                             expression = expr;
                         }
                     }
-                    if(expression != null)
+                    if (expression != null)
                     {
                         result = data.Where(expression);
                     }
-                    if(paginationRequest.SortColumn != null)
+                    if (paginationRequest.SortColumn != null)
                     {
-                        if(!string.IsNullOrEmpty(paginationRequest.SortColumn.SortByColumn))
+                        if (!string.IsNullOrEmpty(paginationRequest.SortColumn.SortByColumn))
                         {
                             result = ApplySort(result, paginationRequest.SortColumn);
                         }
@@ -98,7 +116,7 @@ namespace lms.api.Repository
                     response.TotalPage = (int)totalPage;
                     response.CurrentPage = paginationRequest.PageNumber.HasValue ? paginationRequest.PageNumber.Value : 1;
 
-                    if(paginationRequest.PageSize > 0 && paginationRequest.PageNumber.HasValue)
+                    if (paginationRequest.PageSize > 0 && paginationRequest.PageNumber.HasValue)
                     {
                         response.Model = Paginate(result, paginationRequest.PageNumber.Value, (int)paginationRequest.PageSize);
                     }
@@ -128,7 +146,7 @@ namespace lms.api.Repository
             var orderDirection = sortColumn.SortOrder == SortOrder.Ascending ? "OrderBy" : "OrderByDescending";
             var resultExp = Expression.Call(
                 typeof(Queryable), orderDirection,
-                new[] {type, property.PropertyType },
+                new[] { type, property.PropertyType },
                 data.Expression, Expression.Quote(orderByExp)
             );
 
@@ -172,7 +190,7 @@ namespace lms.api.Repository
                 throw new ArgumentException($"Column '{columnName}' does not exist in the entity '{typeof(T).Name}'.", nameof(columnName));
             object propertyValue;
 
-            if(property.PropertyType == typeof(int?) || property.PropertyType == typeof(Nullable<int>))
+            if (property.PropertyType == typeof(int?) || property.PropertyType == typeof(Nullable<int>))
             {
                 int number;
                 if (int.TryParse(value as string, out number))
@@ -184,10 +202,10 @@ namespace lms.api.Repository
                     throw new Exception("Value can not be converted to integer");
                 }
             }
-            else if(property.PropertyType == typeof(DateTime?) || property.PropertyType == typeof(Nullable<int>))
+            else if (property.PropertyType == typeof(DateTime?) || property.PropertyType == typeof(Nullable<int>))
             {
                 DateTime dateTime;
-                if(DateTime.TryParse(value as string, out dateTime))
+                if (DateTime.TryParse(value as string, out dateTime))
                 {
                     propertyValue = dateTime;
                 }
@@ -205,7 +223,7 @@ namespace lms.api.Repository
             Expression left = Expression.Property(parameter, property);
             Expression right = Expression.Constant(propertyValue);
 
-            switch(fType)
+            switch (fType)
             {
                 case FilterType.EqualTo:
 
@@ -234,28 +252,8 @@ namespace lms.api.Repository
                 default:
                     throw new ArgumentException($"Unsupported operator: {fType}");
 
-
-            }
-            public async Task<T> GetByCondition(Expression<Func<T, bool>> condition)
-            {
-                return await _context.Set<T>().FirstOrDefaultAsync(condition);
             }
 
-            public async Task<long> GenerateUniqueAiIdAsync()
-            {
-                Random random = new Random();
-                long newAiId;
-                bool exists;
-
-                do
-                {
-                    newAiId = random.Next(1000, 10000);
-                    exists = await _context.Set<T>().AnyAsync(e => EF.Property<long>(e, "AiId") == newAiId);
-                }
-                while (exists);
-
-                return newAiId;
-            }
         }
     }
 }

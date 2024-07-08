@@ -1,13 +1,13 @@
-﻿using System.ComponentModel;
-
-namespace lms.api.Models.RequestModels
+﻿namespace lms.api.Models.RequestModels
 {
     public class PaginationRequest
     {
         public int? PageNumber { get; set; }
         public int? PageSize { get; set; }
+#nullable enable
         public SortColumn? SortColumn { get; set; }
         public FilterCoulmn[]? FilterCoulmn { get; set; }
+#nullable disable
     }
 
     public class SortColumn

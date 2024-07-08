@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 
 namespace lms.api.Models
@@ -16,9 +17,11 @@ namespace lms.api.Models
         [AllowNull]
         public long? DepartmentId { get; set; }
         [ForeignKey("DepartmentId")]
-        public Department Department { get; set; }
+        public Departments Departments { get; set; }
+
         [Required]
         public string FirstName { get; set; }
+
 #nullable enable
         [AllowNull]
         public string? MiddleName { get; set; }
@@ -26,12 +29,15 @@ namespace lms.api.Models
         [AllowNull]
         public string? LastName { get; set; }
 #nullable disable
+
         [Required]
         [EmailAddress]
         public string Email { get; set; }
+
         [Required]
         [MaxLength(10)]
         public string MobileNumber { get; set; }
+
         [Required]
         public DateOnly DOB { get; set; }
 
@@ -48,8 +54,9 @@ namespace lms.api.Models
         public string? ModifiedBy { get; set; }
         public DateTime? ModifiedAt { get; set; }
 #nullable disable
+
         public ICollection<Usermaster> Usermasters { get; set; }
         public ICollection<LeaveSum> LeaveSum { get; set; }
-        public ICollection<Leave> Leaves { get;}
+        public ICollection<Leave> Leaves { get; }
     }
 }

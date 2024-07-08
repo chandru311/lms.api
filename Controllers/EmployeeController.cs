@@ -18,6 +18,7 @@ namespace lms.api.Controllers
     {
         private readonly IGenericRepository<Usermaster> _userRepository;
         private readonly IGenericRepository<Employees> _employeeRepository;
+        private readonly IGenericRepository<Managers> _managersRepository;
         private readonly IMapper _mapper;
         private readonly ApplicationDbContext _context;
         private string _loggedInUserId;
@@ -68,19 +69,19 @@ namespace lms.api.Controllers
             return Ok(response);
         }
 
-        [HttpGet("GetEmployeesByManagerId")]
+        [HttpGet("GetEmployeesByManager")]
         [Authorize]
-        public async Task<IActionResult> GetEmployeeByManagerId()
+        public async Task<IActionResult> GetEmployeeByManager()
         {
             GetLoggedInUserId();
             BaseResponse<List<Managers>> response = new();
             try
             {
-                var manager = await _userRepository.GetByCondition(x => x.UId == Convert.ToInt64(_loggedInUserId));
-                var employeeId = manager.EmployeeId;
+                var manager = await _userRepository.GetByCondition(x => x.AiId == Convert.ToInt64(_loggedInUserId));
+                var aiId = manager.AiId;
 
-                var employees = await _managersRepository.Find(x => x.EmployeeId == employeeId);
-                
+                var employees = await _managersRepository.Find(x => x.AiId == aiId);
+
                 response.Success = true;
                 response.Data = employees;
             }
@@ -89,17 +90,17 @@ namespace lms.api.Controllers
                 response.Message = ex.Message;
             }
             return Ok(response);
-            
+
         }
 
-        [HttpGet("{EmployeeId:long}")]
+        [HttpGet("GetEmployeeById/{AiId:long}")]
         [Authorize]
-        public async Task<IActionResult> GetEmployee([FromRoute] long EmployeeId)
+        public async Task<IActionResult> GetEmployee([FromRoute] long AiId)
         {
             BaseResponse<Employees> resp = new();
             try
             {
-                var employee = await _employeeRepository.Get(EmployeeId);
+                var employee = await _employeeRepository.Get(AiId);
                 if (employee == null)
                 {
                     resp.Message = "Employee not Found";
@@ -186,17 +187,17 @@ namespace lms.api.Controllers
             }
         }
 
-        [HttpPut("UpdateEmployee/{EmployeeId:long}")]
+        [HttpPut("UpdateEmployee/{AiId:long}")]
         [Authorize]
-        public async Task<IActionResult> UpdateEmployee(long EmployeeId, [FromBody] CreateEmployeeRequest reqModel)
+        public async Task<IActionResult> UpdateEmployee(long AiId, [FromBody] CreateEmployeeRequest reqModel)
         {
             BaseResponse<Employees> resp = new();
             try
             {
                 if (ModelState.IsValid)
                 {
-                    var employee = await _employeeRepository.Get(EmployeeId);
-                    var employeeFromUserDb = await _userRepository.Get(EmployeeId);
+                    var employee = await _employeeRepository.Get(AiId);
+                    var employeeFromUserDb = await _userRepository.Get(AiId);
                     if (employee == null)
                     {
                         resp.Message = "No Employee Found";
@@ -245,15 +246,15 @@ namespace lms.api.Controllers
         }
 
 
-        [HttpPut("Active_Deactive/{EmployeeId:long}")]
+        [HttpPut("Active_Deactive/{AiId:long}")]
         [Authorize]
-        public async Task<IActionResult> ChangeEmployeeStatus(long EmployeeId, [FromQuery] bool isActive)
+        public async Task<IActionResult> ChangeEmployeeStatus(long AiId, [FromQuery] bool isActive)
         {
             BaseResponse<Employees> resp = new();
             try
             {
-                var userDb = await _userRepository.Get(EmployeeId);
-                var employeeDb = await _employeeRepository.Get(EmployeeId);
+                var userDb = await _userRepository.Get(AiId);
+                var employeeDb = await _employeeRepository.Get(AiId);
 
                 if (userDb == null || employeeDb == null)
                 {
@@ -276,15 +277,15 @@ namespace lms.api.Controllers
             return Ok(resp);
         }
 
-        [HttpDelete("DeleteEmployee/{EmployeeId:long}")]
+        [HttpDelete("DeleteEmployee/{AiId:long}")]
         [Authorize]
-        public async Task<IActionResult> DeleteEmployee(long EmployeeId)
+        public async Task<IActionResult> DeleteEmployee(long AiId)
         {
             BaseResponse<Employees> resp = new();
             try
             {
-                var employee = await _employeeRepository.Get(EmployeeId);
-                var user = await _userRepository.Get(EmployeeId);
+                var employee = await _employeeRepository.Get(AiId);
+                var user = await _userRepository.Get(AiId);
 
                 if (employee == null || user == null)
                 {
