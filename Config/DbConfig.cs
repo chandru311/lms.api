@@ -1,4 +1,4 @@
-﻿using lms.api.Data;
+﻿/*using lms.api.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace cex.web.api.systemadmin.Configuration
@@ -21,9 +21,9 @@ namespace cex.web.api.systemadmin.Configuration
             return services;
         }
     }
-}
+}*/
 
-/*using lms.api.Data;
+using lms.api.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace cex.web.api.systemadmin.Configuration
@@ -47,4 +47,4 @@ namespace cex.web.api.systemadmin.Configuration
         }
     }
 }
-*/
+
