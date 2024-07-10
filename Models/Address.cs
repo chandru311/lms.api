@@ -7,6 +7,8 @@ namespace lms.api.Models
     {
         [Key]
         public long AddressId { get; set; }
+        [Required]
+        public long AiId { get; set; }
 
         [Required]
         public string Country { get; set; }
