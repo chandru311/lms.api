@@ -41,5 +41,8 @@ namespace lms.api.Models
         [AllowNull]
         public DateTime ModifiedAt { get; set; }
 
+        public ICollection<Managers> Managers { get; set; }
+        public ICollection<Employees> Employees { get; set; }
+
     }
 }
