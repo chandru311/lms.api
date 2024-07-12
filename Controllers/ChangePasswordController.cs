@@ -27,8 +27,8 @@ namespace lms.api.Controllers
             {
                 if(ModelState.IsValid)
                 {
-                    var userClaims = Convert.ToInt64(HttpContext.User.Claims.FirstOrDefault(x => x.Type == "UID")?.Value);
-                    var user = await _userRepository.Get(userClaims);
+                    var userClaims = Convert.ToInt64(HttpContext.User.Claims.FirstOrDefault(x => x.Type == "AiId")?.Value);
+                    var user = await _userRepository.GetByCondition(x => x.AiId == userClaims);
                     if(user == null)
                     {
                         response.Message = "Not a valid user or not configured properly";
