@@ -19,6 +19,8 @@ namespace lms.api.Models
 
         [AllowNull]
         public long? DepartmentId { get; set; }
+        [ForeignKey("DepartmentId")]
+        public Departments Department { get; set; }
 
         [Required]
         public string FirstName { get; set; }

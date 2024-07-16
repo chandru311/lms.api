@@ -11,9 +11,6 @@ namespace lms.api.Models
         [Required]
         public long AiId { get; set; }
 
-        [AllowNull]
-        public long? AddressId { get; set; }
-
         [Required]
         public int UserType { get; set; }
 

@@ -1,6 +1,5 @@
 ﻿using lms.api.Types;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 
 namespace lms.api.Models
@@ -12,8 +11,6 @@ namespace lms.api.Models
 
         [Required]
         public long AiId { get; set; }
-        [ForeignKey("AiId")]
-        public Employees Employees { get; set; }
 
         [Required]
         public string LeaveType { get; set; }
