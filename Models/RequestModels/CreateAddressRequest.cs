@@ -6,7 +6,7 @@ namespace lms.api.Models.RequestModels
     public class CreateAddressRequest
     {
         [Required]
-        public long EmployeeId { get; set; }
+        public long AiId { get; set; }
         [Required]
         public string Country { get; set; }
 
