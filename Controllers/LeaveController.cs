@@ -17,20 +17,17 @@ namespace lms.api.Controllers
     public class LeaveController : ControllerBase
     {
         private readonly IGenericRepository<Leave> _leaveRepository;
-        private readonly IGenericRepository<LeaveSum> _leaveSumRepository;
         private readonly IGenericRepository<PublicHolidays> _publicHolidayRepository;
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
 
         public LeaveController(
             IGenericRepository<Leave> leaveRepository,
-            IGenericRepository<LeaveSum> leaveSumRepository,
             IGenericRepository<PublicHolidays> publicHolidayRepository,
             ApplicationDbContext context,
             IMapper mapper)
         {
             _leaveRepository = leaveRepository;
-            _leaveSumRepository = leaveSumRepository;
             _publicHolidayRepository = publicHolidayRepository;
             _context = context;
             _mapper = mapper;
@@ -192,34 +189,6 @@ namespace lms.api.Controllers
                     if (request.Status != (int)LeaveStatus.Approved && request.Status != (int)LeaveStatus.Rejected)
                     {
                         return BadRequest(new BaseResponse<Leave> { Success = false, Message = "Invalid status. Only approved or rejected statuses are allowed" });
-                    }
-
-                    if (request.Status == (int)LeaveStatus.Approved)
-                    {
-                        var leaveSum = await _leaveSumRepository.GetByCondition(x => x.AiId == leave.AiId);
-                        if (leaveSum != null)
-                        {
-                            switch (leave.LeaveType)
-                            {
-                                case "SickLeave":
-                                    leaveSum.SickLeave -= 1;
-                                    leaveSum.LeavesTaken += 1;
-                                    break;
-                                case "CasualLeave":
-                                    leaveSum.CasualLeave -= 1;
-                                    leaveSum.LeavesTaken += 1;
-                                    break;
-                                case "PaidLeave":
-                                    leaveSum.PaidLeave -= 1;
-                                    leaveSum.LeavesTaken += 1;
-                                    break;
-                                case "UnpaidLeave":
-                                case "Others":
-                                    leaveSum.LeavesTaken += 1;
-                                    break;
-                            }
-                            await _leaveSumRepository.Update(leaveSum);
-                        }
                     }
 
                     leave.Status = (LeaveStatus)request.Status;

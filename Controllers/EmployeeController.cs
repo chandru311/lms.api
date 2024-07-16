@@ -13,7 +13,6 @@ namespace lms.api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
     public class EmployeeController : ControllerBase
     {
         private readonly IGenericRepository<Usermaster> _userRepository;
@@ -42,14 +41,19 @@ namespace lms.api.Controllers
         }
 
         [HttpGet("GetAllEmployees")]
-        [Authorize]
         public async Task<IActionResult> GetAllEmployees()
         {
             BaseResponse<List<Employees>> response = new();
-
-            var getEmployees = await _employeeRepository.GetAll();
-            response.Success = true;
-            response.Data = getEmployees;
+            try
+            {
+                var getEmployees = await _employeeRepository.GetAll();
+                response.Success = true;
+                response.Data = getEmployees;
+            }
+            catch (Exception ex)
+            {
+                response.Message = ex.Message;
+            }
             return Ok(response);
         }
 
@@ -117,7 +121,7 @@ namespace lms.api.Controllers
             return Ok(resp);
         }
 
-        [HttpPost("AddEmployee")]
+        [HttpPost("CreateEmployee")]
         [Authorize]
         public async Task<IActionResult> CreateEmployee([FromBody] CreateEmployeeRequest reqModel)
         {
@@ -134,7 +138,9 @@ namespace lms.api.Controllers
                     }
 
                     var user = await _userRepository.GetByCondition(x => x.Email == reqModel.Email);
-                    if (user != null)
+                    var employee = await _employeeRepository.GetByCondition(x => x.Email == reqModel.Email);
+
+                    if (user != null || employee != null)
                     {
                         resp.Message = "Email Already Exists";
                         return Ok(resp);
@@ -150,25 +156,8 @@ namespace lms.api.Controllers
                     employeeEntity.CreatedBy = _loggedInUserId;
                     employeeEntity.CreatedAt = DateTime.UtcNow;
 
-                    await _employeeRepository.Create(employeeEntity);
                     await _userRepository.Create(userEntity);
-
-                    var leaveSumEntity = new LeaveSum
-                    {
-                        AiId = employeeEntity.AiId,
-                        UserType = (int)UserTypes.Employee,
-                        Name = reqModel.FirstName,
-                        LeavesAva = 0,
-                        LeavesTaken = 0,
-                        SickLeave = 10,
-                        CasualLeave = 10,
-                        PaidLeave = 20,
-                        UnpaidLeave = 0,
-                        Others = 0,
-                    };
-
-                    _context.LeaveSums.Add(leaveSumEntity);
-                    await _context.SaveChangesAsync();
+                    await _employeeRepository.Create(employeeEntity);
 
                     resp.Success = true;
                     resp.Message = "Employee created successfully";
@@ -182,7 +171,7 @@ namespace lms.api.Controllers
             }
             catch (Exception ex)
             {
-                resp.Message = ex.Message;
+                resp.Message = $"An unexpected error occurred: {ex.Message}";
                 return Ok(resp);
             }
         }
@@ -196,8 +185,16 @@ namespace lms.api.Controllers
             {
                 if (ModelState.IsValid)
                 {
+                    GetLoggedInUserId();
                     var employee = await _employeeRepository.Get(AiId);
                     var employeeFromUserDb = await _userRepository.Get(AiId);
+
+                    if (_loggedInUserId == null)
+                    {
+                        resp.Message = "Unable to retrieve logged-in user's ID";
+                        return Ok(resp);
+                    }
+
                     if (employee == null)
                     {
                         resp.Message = "No Employee Found";
@@ -210,12 +207,6 @@ namespace lms.api.Controllers
                         return Ok(resp);
                     }
 
-                    GetLoggedInUserId();
-                    if (_loggedInUserId == null)
-                    {
-                        resp.Message = "Unable to retrieve logged-in user's ID";
-                        return Ok(resp);
-                    }
 
                     _mapper.Map(reqModel, employeeFromUserDb);
                     employeeFromUserDb.ModifiedBy = _loggedInUserId;
@@ -244,7 +235,6 @@ namespace lms.api.Controllers
                 return Ok(resp);
             }
         }
-
 
         [HttpPut("Active_Deactive/{AiId:long}")]
         [Authorize]
@@ -296,6 +286,7 @@ namespace lms.api.Controllers
                 await _employeeRepository.Delete(employee);
                 await _userRepository.Delete(user);
                 resp.Success = true;
+                resp.Message = "Manager has been Deleted";
             }
             catch (Exception ex)
             {
