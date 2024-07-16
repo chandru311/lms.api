@@ -19,7 +19,6 @@ namespace lms.api.Controllers
         }
 
         [HttpPost]
-        [Authorize]
         public async Task<IActionResult> ChangeUserPassword([FromBody] ChangePasswordRequest reqModel)
         {
             BaseResponse<UsermasterResponse> response = new BaseResponse<UsermasterResponse>();

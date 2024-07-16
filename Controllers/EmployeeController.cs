@@ -58,7 +58,6 @@ namespace lms.api.Controllers
         }
 
         [HttpGet]
-        [Authorize]
         public IActionResult GetEmployeeByPagination(PaginationRequest reqModel)
         {
             PaginationResponse<IQueryable<Employees>> response = new();
@@ -74,7 +73,6 @@ namespace lms.api.Controllers
         }
 
         [HttpGet("GetEmployeesByManager")]
-        [Authorize]
         public async Task<IActionResult> GetEmployeeByManager()
         {
             GetLoggedInUserId();
@@ -98,7 +96,6 @@ namespace lms.api.Controllers
         }
 
         [HttpGet("GetEmployeeById/{AiId:long}")]
-        [Authorize]
         public async Task<IActionResult> GetEmployee([FromRoute] long AiId)
         {
             BaseResponse<Employees> resp = new();
@@ -122,7 +119,6 @@ namespace lms.api.Controllers
         }
 
         [HttpPost("CreateEmployee")]
-        [Authorize]
         public async Task<IActionResult> CreateEmployee([FromBody] CreateEmployeeRequest reqModel)
         {
             BaseResponse<Employees> resp = new();
@@ -177,7 +173,6 @@ namespace lms.api.Controllers
         }
 
         [HttpPut("UpdateEmployee/{AiId:long}")]
-        [Authorize]
         public async Task<IActionResult> UpdateEmployee(long AiId, [FromBody] CreateEmployeeRequest reqModel)
         {
             BaseResponse<Employees> resp = new();
@@ -237,7 +232,6 @@ namespace lms.api.Controllers
         }
 
         [HttpPut("Active_Deactive/{AiId:long}")]
-        [Authorize]
         public async Task<IActionResult> ChangeEmployeeStatus(long AiId, [FromQuery] bool isActive)
         {
             BaseResponse<Employees> resp = new();
@@ -268,7 +262,6 @@ namespace lms.api.Controllers
         }
 
         [HttpDelete("DeleteEmployee/{AiId:long}")]
-        [Authorize]
         public async Task<IActionResult> DeleteEmployee(long AiId)
         {
             BaseResponse<Employees> resp = new();

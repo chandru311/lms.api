@@ -12,7 +12,6 @@ namespace lms.api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
     public class AddressController : ControllerBase
     {
         private readonly IGenericRepository<Address> _addressRepository;

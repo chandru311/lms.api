@@ -23,7 +23,6 @@ namespace lms.api.Controllers
         }
 
         [HttpGet]
-        [Authorize]
         public async Task<IActionResult> GetAllLeaveTypes()
         {
             BaseResponse<LeaveType> response = new();
@@ -40,7 +39,6 @@ namespace lms.api.Controllers
         }
 
         [HttpGet("/{Id:long}")]
-        [Authorize]
         public async Task<IActionResult> GetLeaveTypeByID([FromRoute]long Id)
         {
             BaseResponse<LeaveType> response = new();
@@ -63,7 +61,6 @@ namespace lms.api.Controllers
         }
 
         [HttpPost]
-        [Authorize]
         public async Task<IActionResult> CreateLeaveType([FromBody]CreateLeaveType reqModel)
         {
             BaseResponse<LeaveType> response = new();
@@ -101,7 +98,6 @@ namespace lms.api.Controllers
         }
 
         [HttpPut("{Id:long}")]
-        [Authorize]
         public async Task<IActionResult> UpdateLeaveType([FromRoute] long Id,[FromBody] CreateLeaveType reqModel)
         {
             BaseResponse<LeaveType> response = new();
@@ -138,7 +134,6 @@ namespace lms.api.Controllers
         }
 
         [HttpPut("Active_Deactive/{Id:long}")]
-        [Authorize]
         public async Task<IActionResult> ChangeLeaveStatus(long Id, [FromQuery] bool isActive)
         {
             BaseResponse<Employees> resp = new();
@@ -166,7 +161,6 @@ namespace lms.api.Controllers
         }
 
         [HttpDelete("{Id:long}")]
-        [Authorize]
         public async Task<IActionResult> DeleteLeaveType(long Id)
         {
             BaseResponse<Employees> resp = new();
