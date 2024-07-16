@@ -11,7 +11,6 @@ namespace lms.api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
     public class DepartmentsController : ControllerBase
     {
         private readonly IGenericRepository<Departments> _departmentRepository;

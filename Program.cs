@@ -4,7 +4,6 @@ using lms.api.Data;
 using lms.api.Mapping;
 using lms.api.Models;
 using lms.api.Repository;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -38,7 +37,9 @@ builder.Services.AddTransient(typeof(IGenericRepository<>), typeof(GenericReposi
 
 #region JWT
 
-builder.Services.AddAuthenticationConfigJwt(builder.Configuration);
+// Comment out the JWT authentication configuration
+// builder.Services.AddAuthenticationConfigJwt(builder.Configuration);
+
 builder.Services.AddSwaggerConfiguration(builder.Configuration);
 
 #endregion
@@ -51,19 +52,19 @@ builder.Services.AddControllers();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-//if (app.Environment.IsDevelopment())
-//{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-//}
+// if (app.Environment.IsDevelopment())
+// {
+app.UseSwagger();
+app.UseSwaggerUI();
+// }
 
 app.UseCors("CustomPolicy");
 
 app.UseHttpsRedirection();
 
-app.UseAuthentication();
-
-app.UseAuthorization();
+// Comment out the authentication and authorization middleware
+// app.UseAuthentication();
+// app.UseAuthorization();
 
 app.MapControllers();
 

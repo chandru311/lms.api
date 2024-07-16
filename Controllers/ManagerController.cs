@@ -39,7 +39,6 @@ namespace lms.api.Controllers
         }
 
         [HttpGet("GetAllManagers")]
-        [Authorize]
         public async Task<IActionResult> GetAllManagers()
         {
             BaseResponse<IEnumerable<Managers>> response = new();
@@ -57,7 +56,6 @@ namespace lms.api.Controllers
         }
 
         [HttpGet("GetManagerById/{AiID:long}")]
-        [Authorize]
         public async Task<IActionResult> GetManagerById([FromRoute] long AiId)
         {
             BaseResponse<Managers> response = new();
@@ -82,7 +80,6 @@ namespace lms.api.Controllers
         }
 
         [HttpPost("AddManager")]
-        [Authorize]
         public async Task<IActionResult> CreateManager([FromBody] CreateManagerRequest reqModel)
         {
             BaseResponse<Managers> response = new();
@@ -155,7 +152,6 @@ namespace lms.api.Controllers
         }
 
         [HttpPut("UpdateManager/{AiId:long}")]
-        [Authorize]
         public async Task<IActionResult> UpdateManager([FromRoute] long AiId, [FromBody] CreateManagerRequest reqModel)
         {
             BaseResponse<Managers> response = new();
@@ -200,7 +196,6 @@ namespace lms.api.Controllers
         }
 
         [HttpPut("Active_Deactive/{AiId:long}")]
-        [Authorize]
         public async Task<IActionResult> ChangeManagerStatus(long AiId, [FromQuery] bool isActive)
         {
             BaseResponse<Managers> response = new();
@@ -226,7 +221,6 @@ namespace lms.api.Controllers
         }
 
         [HttpDelete("DeleteManager/{AiId:long}")]
-        [Authorize]
         public async Task<IActionResult> DeleteManager(long AiId)
         {
             BaseResponse<Managers> response = new();

@@ -13,7 +13,6 @@ namespace lms.api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
     public class LeaveController : ControllerBase
     {
         private readonly IGenericRepository<Leave> _leaveRepository;
@@ -37,7 +36,6 @@ namespace lms.api.Controllers
         }
 
         [HttpGet("GetAllPublicHolidays")]
-        [Authorize]
         public async Task<IActionResult> GetAllHolidays()
         {
             BaseResponse<IEnumerable<PublicHolidays>> response = new();
@@ -56,7 +54,6 @@ namespace lms.api.Controllers
         }
 
         [HttpGet("GetAllLeaves")]
-        [Authorize]
         public async Task<IActionResult> GetAllLeaves()
         {
             try
@@ -71,7 +68,6 @@ namespace lms.api.Controllers
         }
 
         [HttpGet("GetLeavesByEmployeeId/{AiId:long}")]
-        [Authorize]
         public async Task<IActionResult> GetLeavesByEmployeeId(long AiId)
         {
             try
@@ -90,7 +86,6 @@ namespace lms.api.Controllers
         }
 
         [HttpPost("ApplyLeave")]
-        [Authorize]
         public async Task<IActionResult> ApplyLeave([FromBody] ApplyLeaveRequest request)
         {
             try
@@ -131,7 +126,6 @@ namespace lms.api.Controllers
         }
 
         [HttpPut("UpdateLeave/{LeaveId:long}")]
-        [Authorize]
         public async Task<IActionResult> UpdateLeave(long LeaveId, [FromBody] ApplyLeaveRequest request)
         {
             try
@@ -171,7 +165,6 @@ namespace lms.api.Controllers
         }
 
         [HttpPut("Approve_RejectLeave/{LeaveId:long}")]
-        [Authorize]
         public async Task<IActionResult> ApplyOrRejectLeave(long LeaveId, [FromBody] UpdateLeaveStatusRequest request)
         {
             try
@@ -239,7 +232,6 @@ namespace lms.api.Controllers
         }
 
         [HttpDelete("DeleteLeave/{LeaveId:long}")]
-        [Authorize]
         public async Task<IActionResult> DeleteLeave(long LeaveId)
         {
             try
