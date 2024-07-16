@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 
 namespace lms.api.Models
@@ -13,6 +14,8 @@ namespace lms.api.Models
 
         [AllowNull]
         public long? AddressId { get; set; }
+        [ForeignKey("AddressId")]
+        public Address Address { get; set; }
 
         [AllowNull]
         public long? DepartmentId { get; set; }
@@ -50,7 +53,5 @@ namespace lms.api.Models
         public string? ModifiedBy { get; set; }
         public DateTime? ModifiedAt { get; set; }
 #nullable disable
-
-        public ICollection<Employees> Employees { get; set; }
     }
 }

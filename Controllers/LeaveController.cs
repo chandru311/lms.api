@@ -18,19 +18,41 @@ namespace lms.api.Controllers
     {
         private readonly IGenericRepository<Leave> _leaveRepository;
         private readonly IGenericRepository<LeaveSum> _leaveSumRepository;
+        private readonly IGenericRepository<PublicHolidays> _publicHolidayRepository;
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
 
         public LeaveController(
             IGenericRepository<Leave> leaveRepository,
             IGenericRepository<LeaveSum> leaveSumRepository,
+            IGenericRepository<PublicHolidays> publicHolidayRepository,
             ApplicationDbContext context,
             IMapper mapper)
         {
             _leaveRepository = leaveRepository;
             _leaveSumRepository = leaveSumRepository;
+            _publicHolidayRepository = publicHolidayRepository;
             _context = context;
             _mapper = mapper;
+        }
+
+        [HttpGet("GetAllPublicHolidays")]
+        [Authorize]
+        public async Task<IActionResult> GetAllHolidays()
+        {
+            BaseResponse<IEnumerable<PublicHolidays>> response = new();
+            try
+            {
+                var holidays = await _publicHolidayRepository.GetAll();
+                response.Success = true;
+                response.Data = holidays;
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = ex.Message;
+            }
+            return Ok(response);
         }
 
         [HttpGet("GetAllLeaves")]

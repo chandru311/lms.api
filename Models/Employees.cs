@@ -13,6 +13,8 @@ namespace lms.api.Models
 
         [AllowNull]
         public long? AddressId { get; set; }
+        [ForeignKey("AddressId")]
+        public Address Address { get; set; }
 
         [AllowNull]
         public long? DepartmentId { get; set; }
@@ -54,9 +56,6 @@ namespace lms.api.Models
         public string? ModifiedBy { get; set; }
         public DateTime? ModifiedAt { get; set; }
 #nullable disable
-
-        public ICollection<Usermaster> Usermasters { get; set; }
-        public ICollection<LeaveSum> LeaveSum { get; set; }
         public ICollection<Leave> Leaves { get; }
     }
 }

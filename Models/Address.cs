@@ -7,7 +7,6 @@ namespace lms.api.Models
     {
         [Key]
         public long AddressId { get; set; }
-
         [Required]
         public long AiId { get; set; }
 
@@ -40,6 +39,9 @@ namespace lms.api.Models
         public string ModifiedBy { get; set; }
         [AllowNull]
         public DateTime ModifiedAt { get; set; }
+
+        public ICollection<Managers> Managers { get; set; }
+        public ICollection<Employees> Employees { get; set; }
 
     }
 }
