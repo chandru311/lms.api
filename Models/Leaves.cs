@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace lms.api.Models
 {
-    public class Leave
+    public class Leaves
     {
         [Key]
         public long LeaveId { get; set; }

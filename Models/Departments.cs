@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace lms.api.Models
 {
@@ -36,9 +37,11 @@ namespace lms.api.Models
         public string? ModifiedBy { get; set; }
 
         public DateTime? ModifiedAt { get; set; }
-
 #nullable disable
+
+        [JsonIgnore]
         public ICollection<Managers> Managers { get; }
+        [JsonIgnore]
         public ICollection<Employees> Employees { get; }
     }
 }

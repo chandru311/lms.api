@@ -3,9 +3,7 @@ using lms.api.Models;
 using lms.api.Models.RequestModels;
 using lms.api.Models.ResponseModels;
 using lms.api.Repository;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace lms.api.Controllers
 {
@@ -64,9 +62,8 @@ namespace lms.api.Controllers
                 }
 
                 var department = _mapper.Map<Departments>(createRequest);
+                department.CreatedBy = "Admin";
                 department.CreatedAt = DateTime.UtcNow;
-
-                department.CreatedBy = User.FindFirstValue("UId");
 
                 await _departmentRepository.Create(department);
 
@@ -78,8 +75,8 @@ namespace lms.api.Controllers
             }
         }
 
-        [HttpPut("UpdateDepartment/{id:long}")]
-        public async Task<ActionResult<BaseResponse<Departments>>> UpdateDepartment(long id, CreateDepartmentRequest updateRequest)
+        [HttpPut("UpdateDepartment/{DepartmentId:long}")]
+        public async Task<ActionResult<BaseResponse<Departments>>> UpdateDepartment(long DepartmentId, CreateDepartmentRequest updateRequest)
         {
             if (!ModelState.IsValid)
             {
@@ -88,17 +85,15 @@ namespace lms.api.Controllers
 
             try
             {
-                var department = await _departmentRepository.Get(id);
-                if (department == null)
+                var checkDepartment = await _departmentRepository.Get(DepartmentId);
+                if (checkDepartment == null)
                 {
                     return NotFound(new BaseResponse<Departments> { Success = false, Message = "Department not found" });
                 }
 
-                department.DepartmentName = updateRequest.DepartmentName;
+                var department = _mapper.Map<Departments>(updateRequest);
+                department.ModifiedBy = "Admin";
                 department.ModifiedAt = DateTime.UtcNow;
-
-                var userId = User.FindFirstValue("UId");
-                department.ModifiedBy = userId;
 
                 await _departmentRepository.Update(department);
 
@@ -130,12 +125,12 @@ namespace lms.api.Controllers
             }
         }
 
-        [HttpGet("GetDepartment/{id:long}")]
-        public async Task<ActionResult<BaseResponse<Departments>>> GetDepartment(long id)
+        [HttpGet("GetDepartment/{DepartmentId:long}")]
+        public async Task<ActionResult<BaseResponse<Departments>>> GetDepartment(long DepartmentId)
         {
             try
             {
-                var department = await _departmentRepository.Get(id);
+                var department = await _departmentRepository.Get(DepartmentId);
                 if (department == null)
                 {
                     return NotFound(new BaseResponse<Departments> { Success = false, Message = "Department not found" });
@@ -151,8 +146,8 @@ namespace lms.api.Controllers
             }
         }
 
-        [HttpPatch("SetDepartmentStatus/{id:long}")]
-        public async Task<ActionResult<BaseResponse<Departments>>> SetDepartmentStatus(long id, [FromBody] int status)
+        [HttpPatch("Active_Deactive/{DepartmentId:long}")]
+        public async Task<ActionResult<BaseResponse<Departments>>> ChangeDepartmentStatus(long DepartmentId, [FromBody] int status)
         {
             if (status != 0 && status != 1)
             {
@@ -161,17 +156,15 @@ namespace lms.api.Controllers
 
             try
             {
-                var department = await _departmentRepository.Get(id);
+                var department = await _departmentRepository.Get(DepartmentId);
                 if (department == null)
                 {
                     return NotFound(new BaseResponse<Departments> { Success = false, Message = "Department not found" });
                 }
 
                 department.Active = status;
+                department.ModifiedBy = "Admin";
                 department.ModifiedAt = DateTime.UtcNow;
-
-                var userId = User.FindFirstValue("UId");
-                department.ModifiedBy = userId;
 
                 await _departmentRepository.Update(department);
 
@@ -183,12 +176,12 @@ namespace lms.api.Controllers
             }
         }
 
-        [HttpDelete("DeleteDepartment/{id:long}")]
-        public async Task<ActionResult<BaseResponse<bool>>> DeleteDepartment(long id)
+        [HttpDelete("DeleteDepartment/{DepartmentId:long}")]
+        public async Task<ActionResult<BaseResponse<bool>>> DeleteDepartment(long DepartmentId)
         {
             try
             {
-                var department = await _departmentRepository.Get(id);
+                var department = await _departmentRepository.Get(DepartmentId);
                 if (department == null)
                 {
                     return NotFound(new BaseResponse<bool> { Success = false, Message = "Department not found" });
@@ -204,27 +197,27 @@ namespace lms.api.Controllers
             }
         }
 
-        [HttpPatch("AssignDepartmentHead/{departmentId:long}/{aiId:long}")]
-        public async Task<ActionResult<BaseResponse<Departments>>> AssignDepartmentHead(long departmentId, long aiId)
+        [HttpPatch("AssignDepartmentHead/{DepartmentId:long}/{AiId:long}")]
+        public async Task<ActionResult<BaseResponse<Departments>>> AssignDepartmentHead(long DepartmentId, long AiId)
         {
             try
             {
-                var department = await _departmentRepository.Get(departmentId);
+                var department = await _departmentRepository.Get(DepartmentId);
                 if (department == null)
                 {
                     return NotFound(new BaseResponse<Departments> { Success = false, Message = "Department not found" });
                 }
 
-                var manager = await _managerRepository.Get(aiId);
+                var manager = await _managerRepository.GetByCondition(x => x.AiId == AiId);
                 if (manager == null)
                 {
                     return NotFound(new BaseResponse<Departments> { Success = false, Message = "Manager not found" });
                 }
 
-                var managerUser = await _userRepository.GetByCondition(u => u.AiId == manager.AiId && u.Active == 1 && (u.UserType == 1 || u.UserType == 2));
+                var managerUser = await _userRepository.GetByCondition(u => u.AiId == manager.AiId && u.Active == 1 && u.UserType == 2);
                 if (managerUser == null)
                 {
-                    return BadRequest(new BaseResponse<Departments> { Success = false, Message = "Invalid user. Only active managers or admins can be department heads." });
+                    return BadRequest(new BaseResponse<Departments> { Success = false, Message = "Invalid user. Only active managers  can be department head." });
                 }
 
                 var existingDepartment = await _departmentRepository.GetByCondition(d => d.DepartmentHeadId == manager.AiId && d.Active == 1);
@@ -233,16 +226,14 @@ namespace lms.api.Controllers
                     return BadRequest(new BaseResponse<Departments> { Success = false, Message = "Manager is already assigned as department head in another active department" });
                 }
 
-                department.DepartmentHeadId = manager.AiId;
                 department.DepartmentHead = manager.FirstName;
+                department.DepartmentHeadId = manager.AiId;
                 department.ModifiedAt = DateTime.UtcNow;
-
-                var userId = User.FindFirstValue("UId");
-                department.ModifiedBy = userId;
+                department.ModifiedBy = "Admin";
 
                 await _departmentRepository.Update(department);
 
-                manager.DepartmentId = departmentId;
+                manager.DepartmentId = DepartmentId;
                 await _managerRepository.Update(manager);
 
                 return Ok(new BaseResponse<Departments> { Success = true, Data = department });

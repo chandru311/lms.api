@@ -3,10 +3,7 @@ using lms.api.Models;
 using lms.api.Models.RequestModels;
 using lms.api.Models.ResponseModels;
 using lms.api.Repository;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace lms.api.Controllers
 {
@@ -39,7 +36,7 @@ namespace lms.api.Controllers
         }
 
         [HttpGet("/{Id:long}")]
-        public async Task<IActionResult> GetLeaveTypeByID([FromRoute]long Id)
+        public async Task<IActionResult> GetLeaveTypeByID([FromRoute] long Id)
         {
             BaseResponse<LeaveType> response = new();
             try
@@ -61,14 +58,14 @@ namespace lms.api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateLeaveType([FromBody]CreateLeaveType reqModel)
+        public async Task<IActionResult> CreateLeaveType([FromBody] CreateLeaveType reqModel)
         {
             BaseResponse<LeaveType> response = new();
             try
             {
                 if (ModelState.IsValid)
                 {
-                    var loggedInUserId = User.FindFirstValue("AiId");
+                    var loggedInUserId = "1";
                     var leaveExists = await _leaveTypeRepository.GetByCondition(x => x.Name == reqModel.Name);
                     if (leaveExists != null)
                     {
@@ -90,7 +87,7 @@ namespace lms.api.Controllers
                     response.Message = "Model is not valid";
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 response.Message = ex.Message;
             }
@@ -98,7 +95,7 @@ namespace lms.api.Controllers
         }
 
         [HttpPut("{Id:long}")]
-        public async Task<IActionResult> UpdateLeaveType([FromRoute] long Id,[FromBody] CreateLeaveType reqModel)
+        public async Task<IActionResult> UpdateLeaveType([FromRoute] long Id, [FromBody] CreateLeaveType reqModel)
         {
             BaseResponse<LeaveType> response = new();
             try
@@ -109,7 +106,7 @@ namespace lms.api.Controllers
                     return Ok(response);
                 }
 
-                var loggedInUserId = User.FindFirstValue("AiId");
+                var loggedInUserId = "1";
                 var leaveType = await _leaveTypeRepository.Get(Id);
                 if (leaveType == null)
                 {

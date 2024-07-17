@@ -6,7 +6,9 @@ namespace lms.api.Repository
 {
     public interface IGenericRepository<T> where T : class
     {
+#nullable enable
         PaginationResponse<IQueryable<T>> GetByPagination(PaginationRequest paginationRequest, Expression<Func<T, bool>>? condition);
+#nullable disable
         Task<List<T>> GetAll();
         Task<T> Get(long id);
         Task Create(T entity);

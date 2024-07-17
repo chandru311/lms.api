@@ -218,8 +218,9 @@ namespace lms.api.Repository
             {
                 propertyValue = Convert.ChangeType(value, property.PropertyType);
             }
-
+#nullable enable
             BinaryExpression? expression = null;
+#nullable disable
             Expression left = Expression.Property(parameter, property);
             Expression right = Expression.Constant(propertyValue);
 

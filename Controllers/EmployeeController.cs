@@ -1,13 +1,10 @@
 ﻿using AutoMapper;
-using lms.api.Data;
 using lms.api.Models;
 using lms.api.Models.RequestModels;
 using lms.api.Models.ResponseModels;
 using lms.api.Repository;
 using lms.api.Types;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace lms.api.Controllers
 {
@@ -15,29 +12,26 @@ namespace lms.api.Controllers
     [ApiController]
     public class EmployeeController : ControllerBase
     {
-        private readonly IGenericRepository<Usermaster> _userRepository;
         private readonly IGenericRepository<Employees> _employeeRepository;
-        private readonly IGenericRepository<Managers> _managersRepository;
+        private readonly IGenericRepository<Usermaster> _userRepository;
         private readonly IMapper _mapper;
-        private readonly ApplicationDbContext _context;
         private string _loggedInUserId;
 
         public EmployeeController(
-            IGenericRepository<Usermaster> userRepository,
             IGenericRepository<Employees> employeeRepository,
-            ApplicationDbContext context,
+            IGenericRepository<Usermaster> userRepository,
             IMapper mapper
             )
         {
-            _userRepository = userRepository;
             _mapper = mapper;
+            _userRepository = userRepository;
             _employeeRepository = employeeRepository;
-            _context = context;
         }
 
         private void GetLoggedInUserId()
         {
-            _loggedInUserId = User.FindFirstValue("AiId");
+            /*_loggedInUserId = User.FindFirstValue("AiId");*/
+            _loggedInUserId = "1";
         }
 
         [HttpGet("GetAllEmployees")]
@@ -57,7 +51,7 @@ namespace lms.api.Controllers
             return Ok(response);
         }
 
-        [HttpGet]
+        [HttpGet("GetEmployeeByPagination")]
         public IActionResult GetEmployeeByPagination(PaginationRequest reqModel)
         {
             PaginationResponse<IQueryable<Employees>> response = new();
@@ -70,29 +64,6 @@ namespace lms.api.Controllers
                 response.Message = ex.Message;
             }
             return Ok(response);
-        }
-
-        [HttpGet("GetEmployeesByManager")]
-        public async Task<IActionResult> GetEmployeeByManager()
-        {
-            GetLoggedInUserId();
-            BaseResponse<List<Managers>> response = new();
-            try
-            {
-                var manager = await _userRepository.GetByCondition(x => x.AiId == Convert.ToInt64(_loggedInUserId));
-                var aiId = manager.AiId;
-
-                var employees = await _managersRepository.Find(x => x.AiId == aiId);
-
-                response.Success = true;
-                response.Data = employees;
-            }
-            catch (Exception ex)
-            {
-                response.Message = ex.Message;
-            }
-            return Ok(response);
-
         }
 
         [HttpGet("GetEmployeeById/{AiId:long}")]
@@ -126,17 +97,17 @@ namespace lms.api.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    GetLoggedInUserId();
-                    if (_loggedInUserId == null)
-                    {
-                        resp.Message = "Unable to retrieve logged-in user's ID";
-                        return Ok(resp);
-                    }
+                    /* GetLoggedInUserId();
+                     if (_loggedInUserId == null)
+                     {
+                         resp.Message = "Unable to retrieve logged-in user's ID";
+                         return Ok(resp);
+                     }*/
 
                     var user = await _userRepository.GetByCondition(x => x.Email == reqModel.Email);
                     var employee = await _employeeRepository.GetByCondition(x => x.Email == reqModel.Email);
 
-                    if (user != null || employee != null)
+                    if (user != null && employee != null)
                     {
                         resp.Message = "Email Already Exists";
                         return Ok(resp);
@@ -149,6 +120,7 @@ namespace lms.api.Controllers
                     userEntity.UserType = (int)UserTypes.Employee;
 
                     var employeeEntity = _mapper.Map<Employees>(reqModel);
+                    employeeEntity.AiId = userEntity.AiId;
                     employeeEntity.CreatedBy = _loggedInUserId;
                     employeeEntity.CreatedAt = DateTime.UtcNow;
 
@@ -240,7 +212,7 @@ namespace lms.api.Controllers
                 var userDb = await _userRepository.Get(AiId);
                 var employeeDb = await _employeeRepository.Get(AiId);
 
-                if (userDb == null || employeeDb == null)
+                if (userDb == null && employeeDb == null)
                 {
                     resp.Message = "User Not Found";
                 }
@@ -270,7 +242,7 @@ namespace lms.api.Controllers
                 var employee = await _employeeRepository.Get(AiId);
                 var user = await _userRepository.Get(AiId);
 
-                if (employee == null || user == null)
+                if (employee == null && user == null)
                 {
                     resp.Message = "Employee Not Found";
                     return Ok(resp);

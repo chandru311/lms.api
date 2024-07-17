@@ -4,10 +4,8 @@ using lms.api.Models.RequestModels;
 using lms.api.Models.ResponseModels;
 using lms.api.Repository;
 using lms.api.Types;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 
 namespace lms.api.Controllers
 {
@@ -32,7 +30,8 @@ namespace lms.api.Controllers
 
         private void GetLoggedInUserId()
         {
-            _loggedInUserId = User.FindFirstValue("AiId");
+            /* _loggedInUserId = User.FindFirstValue("AiId");*/
+            _loggedInUserId = "1";
         }
 
         [HttpGet("GetAllManagers")]
@@ -52,7 +51,7 @@ namespace lms.api.Controllers
             return Ok(response);
         }
 
-        [HttpGet]
+        [HttpGet("GetManagerByPagination")]
         public IActionResult GetManagerByPagination(PaginationRequest reqModel)
         {
             PaginationResponse<IQueryable<Managers>> response = new();
@@ -99,17 +98,17 @@ namespace lms.api.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    GetLoggedInUserId();
-                    if (_loggedInUserId == null)
-                    {
-                        response.Message = "Unable to retrieve logged-in user's ID";
-                        return Ok(response);
-                    }
+                    /* GetLoggedInUserId();
+                     if (_loggedInUserId == null)
+                     {
+                         response.Message = "Unable to retrieve logged-in user's ID";
+                         return Ok(response);
+                     }*/
 
                     var user = await _userRepository.GetByCondition(x => x.Email == reqModel.Email);
                     var manager = await _managerRepository.GetByCondition(x => x.Email == reqModel.Email);
 
-                    if (_managerRepository != null || user != null)
+                    if (manager != null && user != null)
                     {
                         response.Message = "Email Already Exists";
                         return Ok(response);
@@ -117,12 +116,13 @@ namespace lms.api.Controllers
 
                     var userEntity = _mapper.Map<Usermaster>(reqModel);
                     userEntity.AiId = await _userRepository.GenerateUniqueAiIdAsync();
-                    userEntity.CreatedBy = _loggedInUserId;
+                    userEntity.CreatedBy = "Admin";
                     userEntity.CreatedAt = DateTime.UtcNow;
                     userEntity.UserType = (int)UserTypes.Manager;
 
                     var managerEntity = _mapper.Map<Managers>(reqModel);
-                    managerEntity.CreatedBy = _loggedInUserId;
+                    managerEntity.AiId = userEntity.AiId;
+                    managerEntity.CreatedBy = "Admin";
                     managerEntity.CreatedAt = DateTime.UtcNow;
 
 
@@ -215,7 +215,7 @@ namespace lms.api.Controllers
             {
                 var userDb = await _userRepository.Get(AiId);
                 var managerDb = await _managerRepository.Get(AiId);
-                if (userDb == null || managerDb == null)
+                if (userDb == null && managerDb == null)
                 {
                     response.Message = "User Not Found";
                 }
@@ -244,7 +244,7 @@ namespace lms.api.Controllers
                 var manager = await _managerRepository.Get(AiId);
                 var user = await _userRepository.Get(AiId);
 
-                if (manager == null || user == null)
+                if (manager == null && user == null)
                 {
                     response.Message = "Manager Not Found";
                     return Ok(response);

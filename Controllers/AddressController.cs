@@ -4,9 +4,7 @@ using lms.api.Models;
 using lms.api.Models.RequestModels;
 using lms.api.Models.ResponseModels;
 using lms.api.Repository;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace lms.api.Controllers
 {
@@ -85,7 +83,7 @@ namespace lms.api.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    var loggedInUserId = User.FindFirstValue("AiId");
+                    var loggedInUserId = "1";
                     if (loggedInUserId == null)
                     {
                         return Unauthorized(new BaseResponse<Address> { Success = false, Message = "Invalid User" });
@@ -124,7 +122,7 @@ namespace lms.api.Controllers
                     }
 
                     _mapper.Map(request, address);
-                    var loggedInUserId = User.FindFirstValue("AiId");
+                    var loggedInUserId = "1";
                     address.ModifiedAt = DateTime.Now;
                     address.ModifiedBy = loggedInUserId;
 

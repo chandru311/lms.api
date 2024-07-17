@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace lms.api.Models.RequestModels
 {
-    public class ApplyLeaveRequest
+    public class CreateLeaveRequest
     {
         [Required]
         public long AiId { get; set; }

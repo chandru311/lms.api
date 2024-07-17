@@ -24,6 +24,7 @@ namespace lms.api.Models
 
         [Required]
         public string FirstName { get; set; }
+
 #nullable enable
         [AllowNull]
         public string? MiddleName { get; set; }
@@ -31,6 +32,7 @@ namespace lms.api.Models
         [AllowNull]
         public string? LastName { get; set; }
 #nullable disable
+
         [Required]
         [EmailAddress]
         public string Email { get; set; }

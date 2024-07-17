@@ -20,7 +20,7 @@ namespace lms.api.Models.RequestModels
 
         [Required]
         [MaxLength(10)]
-        public int MobileNumber { get; set; }
+        public string MobileNumber { get; set; }
 
         [Required]
         public string Password { get; set; }
